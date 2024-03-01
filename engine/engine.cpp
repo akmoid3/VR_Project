@@ -25,6 +25,11 @@
 #include <string>
 #include <memory>
 
+// Glew (include it before GL.h):
+#define GLEW_STATIC
+#include <GL/glew.h>
+
+
 #define FREEGLUT_STATIC
 #include <GL/freeglut.h>
 
@@ -374,11 +379,31 @@ bool LIB_API Engine::init(const std::string& titolo, unsigned int width, unsigne
 	// Create the window with a specific title:   
 	windowId = glutCreateWindow(titolo.c_str());
 
+	// Init Glew (*after* the context creation):
+	//glewExperimental = GL_TRUE;
+	GLenum err = glewInit();
+
+	if (err != GLEW_OK) {
+		std::cout << "Error loading GLEW" << std::endl;
+		return 0;
+	}
+
+	// OpenGL 2.1 is required:
+	if (!glewIsSupported("GL_VERSION_2_1"))
+	{
+		std::cout << "OpenGL 2.1 not supported" << std::endl;
+		return 0;
+	}
+
 	// Register callbacks
 	glutReshapeFunc(reshapeCallback);
 	glutDisplayFunc(displayCallback);
 	glutCloseFunc(closeCallback);
 	glutTimerFunc(1000, timerCallback, 0);
+
+	// Tell OpenGL that you want to use vertex arrays for the given attributes:
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_COLOR_ARRAY);
 
 	// Enable zeta buffer
 	glEnable(GL_DEPTH_TEST);

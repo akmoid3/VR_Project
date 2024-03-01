@@ -451,6 +451,8 @@ Node LIB_API* Ovoreader::recursiveLoad(const char* data, unsigned int& position)
 				}
 				position += sizeof(unsigned int);
 
+				// Creare 3 array separati, poi da copiare nei tre vbo di la stessa cosa per le facce
+				// Eliminare VertexData
 				VertexData vertexData;
 				vertexData.posVertex(vertex);
 				vertexData.normal(normal);

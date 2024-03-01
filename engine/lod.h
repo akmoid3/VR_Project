@@ -35,7 +35,7 @@ public:
 	void addVertexData(VertexData);
 	void addFaces(glm::uvec3);
 	std::vector<glm::uvec3> faces() const;
-	std::vector<VertexData> vertex() const;
+	std::vector<VertexData> vertex() const; // std::vector<glm vec3 > per vertici, normale ,textcoord, uv. interleaved array(avanzato), singolo vbo con prima coord vert, poi normale e uv
 
 protected:
 	std::vector<VertexData> m_vertex; ///< The list of VertexData objects in the level of detail.

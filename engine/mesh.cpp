@@ -57,6 +57,9 @@ void LIB_API Mesh::blink()
  * If the object selection flag is set to true, the method sets the color of the object according to its ID for color picking. 
  * @param flag A flag indicating whether to apply the color to the mesh. If the flag is set, it applies the color to the mesh. 
  */
+
+// Non dovrebbe esistere da fare nel render
+// Fare un metodo load lod, qui dentro inizializziamo i vbo e i vao e li popoliamo con i dati nel lod (che passimao come parametro), si chiama una sola volta
 void LIB_API Mesh::load(bool flag) {
 	
 	// Set the color of the object according to its ID for color picking.
@@ -137,7 +140,7 @@ void LIB_API Mesh::render(const glm::mat4& m, void* flag)
 		}
 
 	}
-	load((bool)flag);
+	load((bool)flag); // Non va bene, implementare direttamente il render qui, glbind vertex array vao , gl draw elemnts 2 righe
 }
 
 /**

@@ -72,4 +72,12 @@ protected:	//
 	Material* previousMat; ///< Used for storing the original material of the mesh, when the mesh is set to blink, initialized to nullptr.
 	Material* m_shadowMaterial; ///< The material used for rendering the shadow of the mesh, initialized to nullptr.
 	bool m_isCastingShadow; ///< A flag indicating whether the mesh should be casting a shadow, initialized to true.
+
+	// VBO
+	unsigned int vao;
+	unsigned int vbo_vertex;
+	unsigned int vbo_normal;
+	unsigned int vbo_textcoord;
+	unsigned int vbo_face;
+
 };
