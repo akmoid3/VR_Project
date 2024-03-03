@@ -54,6 +54,7 @@ public: //
 	bool isBlinking() const;
 	bool isCastingShadow();
 	void isCastingShadow(bool);
+	void disposeBuffers();
 
 	// Ereditato tramite Node
 	void render(const glm::mat4&, void*) override;
