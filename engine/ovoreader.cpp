@@ -453,11 +453,15 @@ Node LIB_API* Ovoreader::recursiveLoad(const char* data, unsigned int& position)
 
 				// Creare 3 array separati, poi da copiare nei tre vbo di la stessa cosa per le facce
 				// Eliminare VertexData
-				VertexData vertexData;
+				/*VertexData vertexData;
 				vertexData.posVertex(vertex);
 				vertexData.normal(normal);
 				vertexData.coordText(uv);
-				lod.addVertexData(vertexData);
+				lod.addVertexData(vertexData);*/
+
+				lod.addVertex(vertex);
+				lod.addNormal(normal);
+				lod.addCoordText(uv);
 			}
 
 			// Faces:
@@ -475,7 +479,9 @@ Node LIB_API* Ovoreader::recursiveLoad(const char* data, unsigned int& position)
 
 			}
 			meshNode->addLod(lod);
+			
 		}
+		meshNode->loadLod();
 
 		// Extra information for skinned meshes:
 		if (isSkinned) {

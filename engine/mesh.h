@@ -44,7 +44,7 @@ public: //
 	~Mesh();
 
 	void addLod(Lod);
-	void load(bool flag);
+	void loadLod();
 	void setMaterial(Material*);
 	void shadowMaterial(Material*);
 	void startBlink();

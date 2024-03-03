@@ -6,6 +6,10 @@
 * @author	Gruppo05 (C) SUPSI [mariagrazia.corino@student.supsi.ch, kristian.boldini@student.supsi.ch, ahmed.elaidy@student.supsi.ch]
 */
 #include "engine.h"
+
+#define GLEW_STATIC
+#include <GL/glew.h>
+
 #define FREEGLUT_STATIC
 #include <GL/freeglut.h>
 #include <iostream>
@@ -60,9 +64,51 @@ void LIB_API Mesh::blink()
 
 // Non dovrebbe esistere da fare nel render
 // Fare un metodo load lod, qui dentro inizializziamo i vbo e i vao e li popoliamo con i dati nel lod (che passimao come parametro), si chiama una sola volta
-void LIB_API Mesh::load(bool flag) {
+void LIB_API Mesh::loadLod() {
+	std::vector<glm::vec3> vertexptr = lods[0].vertex();
+	std::vector<glm::vec2> coordtextptr = lods[0].coordText();
+	std::vector<glm::vec3> normalptr = lods[0].normals();
+	std::vector<glm::uvec3> facesptr = lods[0].faces();
+	// Generate a vertex array object and bind it:
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
+
+	// Tell OpenGL that you want to use vertex arrays for the given attributes:
+	glEnableClientState(GL_VERTEX_ARRAY);
 	
-	// Set the color of the object according to its ID for color picking.
+	// Generate a vertex buffer and bind it:
+	glGenBuffers(1, &vbo_vertex);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo_vertex);
+
+	printf("%d , %d", vertexptr.size(), lods[0].vertex().size());
+	// Copy the vertex data from system to video memory:
+	glBufferData(GL_ARRAY_BUFFER, vertexptr.size() * sizeof(glm::vec3),
+		&vertexptr, GL_STATIC_DRAW);
+
+	glGenBuffers(1, &vbo_textcoord);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo_textcoord);
+
+	// Copy the vertex data from system to video memory:
+	glBufferData(GL_ARRAY_BUFFER, coordtextptr.size() * sizeof(glm::vec2),
+		&coordtextptr, GL_STATIC_DRAW);
+
+	glGenBuffers(1, &vbo_normal);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo_normal);
+
+	// Copy the vertex data from system to video memory:
+	glBufferData(GL_ARRAY_BUFFER, normalptr.size() * sizeof(glm::vec3),
+		&normalptr, GL_STATIC_DRAW);
+
+	// Generate a vertex buffer and bind it:
+	glGenBuffers(1, &vbo_face);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo_face);
+
+	// Copy the face index data from system to video memory:
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+		facesptr.size() * 3 * sizeof(unsigned int),
+		&facesptr, GL_STATIC_DRAW);
+
+	/*
 	unsigned char rgba[4];
 	if(flag){
 		unsigned int idValue = id();
@@ -94,7 +140,7 @@ void LIB_API Mesh::load(bool flag) {
 		glTexCoord2f(vertex2.coordText().s, vertex2.coordText().t);
 		glVertex3f(vertex2.posVertex().x, vertex2.posVertex().y, vertex2.posVertex().z);
 		glEnd();
-	}
+	}*/
 }
 
 /**
@@ -140,7 +186,26 @@ void LIB_API Mesh::render(const glm::mat4& m, void* flag)
 		}
 
 	}
-	load((bool)flag); // Non va bene, implementare direttamente il render qui, glbind vertex array vao , gl draw elemnts 2 righe
+	//load((bool)flag); // Non va bene, implementare direttamente il render qui, glbind vertex array vao , gl draw elemnts 2 righe
+
+	// Use it for rendering:
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo_vertex);
+	glVertexPointer(3, GL_FLOAT, 0, nullptr);
+	glDrawArrays(GL_TRIANGLES, 0, lods[0].vertex().size());
+
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo_normal);
+	glVertexPointer(3, GL_FLOAT, 0, nullptr);
+	glDrawArrays(GL_TRIANGLES, 0, lods[0].normals().size());
+
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo_textcoord);
+	glVertexPointer(3, GL_FLOAT, 0, nullptr);
+	glDrawArrays(GL_TRIANGLES, 0, lods[0].coordText().size());
+
+	// Use it for rendering:
+	glDrawElements(GL_TRIANGLES, lods[0].faces().size() * 3, GL_UNSIGNED_INT, nullptr);
 }
 
 /**
