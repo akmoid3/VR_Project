@@ -285,5 +285,5 @@ LIB_API Mesh::Mesh(const std::string& name, const glm::mat4& matrix, Material* m
 * @brief Destructor for the Mesh class.
 */
 LIB_API Mesh::~Mesh() {
-	
+	disposeBuffers();
 }

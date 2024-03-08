@@ -392,7 +392,7 @@ Node LIB_API* Ovoreader::recursiveLoad(const char* data, unsigned int& position)
 		// For each LOD...:
 		vector<unsigned int> verticesPerLOD(LODs); // Let's store this information for the skinned part, in case
 
-		std::vector <VertexData> vertexDataVector;
+	
 		for (unsigned int l = 0; l < LODs; l++) {
 
 			std::cout << "      LOD . . :  " << l + 1 << "/" << LODs << endl;
@@ -450,14 +450,6 @@ Node LIB_API* Ovoreader::recursiveLoad(const char* data, unsigned int& position)
 						<< ", sign: " << tangent.w << endl;
 				}
 				position += sizeof(unsigned int);
-
-				// Creare 3 array separati, poi da copiare nei tre vbo di la stessa cosa per le facce
-				// Eliminare VertexData
-				/*VertexData vertexData;
-				vertexData.posVertex(vertex);
-				vertexData.normal(normal);
-				vertexData.coordText(uv);
-				lod.addVertexData(vertexData);*/
 
 				lod.addVertex(vertex);
 				lod.addNormal(normal);

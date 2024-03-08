@@ -134,7 +134,8 @@ void keyboardCallback(unsigned char key, int mouseX, int mouseY)
 		glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), glm::radians(angleX), glm::vec3(1.0f, 0.0f, 0.0f));
 		rotation = glm::rotate(rotation, glm::radians(angleY), glm::vec3(0.0f, 1.0f, 0.0f));
 		glm::mat4 translation = glm::translate(glm::mat4(1.0f), glm::vec3(x, y, z));
-		selectedCamera->matrix(translation * rotation * selectedCamera->matrix());
+		selectedCamera->matrix( rotation * selectedCamera->matrix() * translation);
+		// prendere la matrice attuale, 
 	}
 }
 

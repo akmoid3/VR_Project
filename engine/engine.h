@@ -47,7 +47,6 @@
 #include "orthographicCamera.h"
 #include "perspectiveCamera.h"
 #include "list.h"
-#include "vertexdata.h"
 #include "ovoreader.h"
 #include "lod.h"
 #include "texture.h"

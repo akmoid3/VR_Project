@@ -16,7 +16,6 @@
 // C/C++:
 #include <string>
 #include <vector>
-#include "vertexdata.h"
 
 /////////////
 // CLASSES //
@@ -32,7 +31,6 @@ class LIB_API Lod {
 public:
 
 	Lod();
-	void addVertexData(VertexData);
 	void addFaces(glm::uvec3);
 	void addNormal(glm::vec3);
 	void addVertex(glm::vec3);

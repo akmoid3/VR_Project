@@ -11,7 +11,6 @@
  // Library include:
 #include "node.h"
 #include "material.h"
-#include "vertexdata.h"
 #include "lod.h"
 #include <glm/glm.hpp>
 #include <glm/gtx/string_cast.hpp>

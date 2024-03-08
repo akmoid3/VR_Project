@@ -156,7 +156,6 @@
     <ClInclude Include="perspectiveCamera.h" />
     <ClInclude Include="spotLight.h" />
     <ClInclude Include="texture.h" />
-    <ClInclude Include="vertexdata.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="camera.cpp" />
@@ -176,7 +175,6 @@
     <ClCompile Include="perspectiveCamera.cpp" />
     <ClCompile Include="spotLight.cpp" />
     <ClCompile Include="texture.cpp" />
-    <ClCompile Include="vertexdata.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
