@@ -57,6 +57,47 @@ int mouseY = 0;
 unsigned int fps = 0;
 unsigned int frames = 0;
 
+// Shaders:
+Shader* vs = nullptr;
+Shader* fs = nullptr;
+Shader* shader = nullptr; // singolo programma, con sia vs e fs, si potrebbe fare la classe program
+int projLoc = -1; // -1 means 'not assigned', as 0 is a valid location, per sapere dove trovare le variabili
+int mvLoc = -1;
+
+
+/////////////
+// SHADERS //
+/////////////
+
+////////////////////////////
+const char* vertShader = R"(
+   #version 440 core
+
+   uniform mat4 projection;
+   uniform mat4 modelview;
+
+   layout(location = 0) in vec3 in_Position;
+  
+
+   void main(void)
+   {
+      gl_Position = projection * modelview * vec4(in_Position, 1.0f);
+      
+   }
+)";
+
+////////////////////////////
+const char* fragShader = R"(
+   #version 440 core
+   
+   out vec4 frag_Output;
+
+   void main(void)
+   {
+      vec4 color = vec4(1.0f, 0.0f, 0.0f, 1.0f);
+      frag_Output = color;
+   }
+)";
 //////////////
 // DLL MAIN //
 //////////////
@@ -204,6 +245,7 @@ std::shared_ptr<List> LIB_API Engine::list() const {
  */
 void LIB_API Engine::list(std::shared_ptr<List> list) {
 	m_list = list;
+	m_list->setProgram(shader);
 }
 
 ///////////////
@@ -397,7 +439,7 @@ bool LIB_API Engine::init(const std::string& titolo, unsigned int width, unsigne
 	GLenum error = glewInit();
 	if (error != GLEW_OK)
 	{
-		std::cout << "[ERROR] " << glewGetErrorString(error) << std::endl;
+		std::cout << "[ERROR] glewok" << glewGetErrorString(error) << std::endl;
 		return -1;
 	}
 	else
@@ -477,6 +519,26 @@ bool LIB_API Engine::init(const std::string& titolo, unsigned int width, unsigne
 	std::cout << "   version  . . : " << glGetString(GL_VERSION) << std::endl;
 	std::cout << "   vendor . . . : " << glGetString(GL_VENDOR) << std::endl;
 	std::cout << "   renderer . . : " << glGetString(GL_RENDERER) << std::endl;
+
+
+	// Compile vertex shader:
+	vs = new Shader("vertex_shader");
+	vs->loadFromMemory(Shader::TYPE_VERTEX, vertShader);
+
+	// Compile fragment shader:
+	fs = new Shader("fragment_shader");
+	fs->loadFromMemory(Shader::TYPE_FRAGMENT, fragShader);
+
+	// Setup shader program:
+	// bisognerebbe fare qualche controllo
+	shader = new Shader("program");
+	shader->build(vs, fs);
+	shader->render(glm::mat4(1.0f), nullptr);
+	shader->bind(0, "in_Position");
+
+	// Get shader variable locations:
+	projLoc = shader->getParamLocation("projection");
+	mvLoc = shader->getParamLocation("modelview");
 	// Done:
 	m_initFlag = true;
 	return true;
@@ -561,10 +623,12 @@ bool LIB_API Engine::free()
  */
 void LIB_API Engine::begin3D(Camera* camera) {
 
-	glMatrixMode(GL_PROJECTION);
+	//glMatrixMode(GL_PROJECTION);
 	camera->update(m_width, m_height);
-	glLoadMatrixf(glm::value_ptr(camera->projectionMatrix()));
+	shader->setMatrix(projLoc, camera->projectionMatrix());
+	//glLoadMatrixf(glm::value_ptr(camera->projectionMatrix()));
 	c_inverse = inverse(camera->getFinalMatrix());
+	
 }
 
 
@@ -669,16 +733,16 @@ Node LIB_API* Engine::load(std::string fileName)
 void LIB_API Engine::begin2D()
 {
 	// Set orthographic projection:
-	glMatrixMode(GL_PROJECTION);
+	//glMatrixMode(GL_PROJECTION);
 	ortho->update(m_width, m_height);
-	glLoadMatrixf(glm::value_ptr(ortho->projectionMatrix()));
-	glMatrixMode(GL_MODELVIEW);
-	glLoadMatrixf(glm::value_ptr(glm::mat4(1.0f)));
+	//glLoadMatrixf(glm::value_ptr(ortho->projectionMatrix()));
+	//glMatrixMode(GL_MODELVIEW);
+	//glLoadMatrixf(glm::value_ptr(glm::mat4(1.0f)));
 
 	// Disable lighting before rendering white 2D text:
 	glDisable(GL_LIGHTING);
 	glDisable(GL_TEXTURE_2D);
-	glColor3f(1.0f, 1.0f, 1.0f);
+	//glColor3f(1.0f, 1.0f, 1.0f);
 }
 
 /**
@@ -703,7 +767,7 @@ void LIB_API Engine::end2D()
  */
 void LIB_API Engine::addText(const char text[64], float x, float y)
 {
-	glRasterPos2f(x, y);
+	//glRasterPos2f(x, y);
 	glutBitmapString(GLUT_BITMAP_8_BY_13, (unsigned char*)text);
 }
 

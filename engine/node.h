@@ -11,6 +11,7 @@
  // Library include:
 #include "object.h"
 #include "list.h"
+#include "shader.h"
 #include <glm/glm.hpp>
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -46,6 +47,7 @@ public: //
 	void pass(std::shared_ptr<List> list, glm::mat4 matrixLivelloPrima = glm::mat4{ 1 });
 	void render(const glm::mat4 & = glm::mat4{ 1 }, void* = nullptr) override;
 	void removeChild(Node* nodeToRemove);
+	void setProgram(Shader* program);
 
 	Node(const std::string& name, const glm::mat4& matrix);
 	~Node();
@@ -59,4 +61,5 @@ protected://
 	glm::mat4 m_matrix; ///< The transformation matrix of the node relative to its parent node.
 	Node* m_parent; ///< A pointer to the parent node, initialized to nullptr.
 	std::vector<Node*> m_children; ///< A vector of pointers to the child nodes.
+	Shader* m_program{ nullptr };
 };

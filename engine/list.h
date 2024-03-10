@@ -11,6 +11,7 @@
  // Library include:
 #include "object.h"
 #include "material.h"
+#include "shader.h"
 #include <glm/glm.hpp>
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -40,6 +41,7 @@ public:	  //
 	void add(Object* object, glm::mat4 finalMatrix);
 	std::list<std::pair<Object*, glm::mat4>> getList();
 	void resetList();
+	void setProgram(Shader* program);
 
 	List();
 	~List();
@@ -58,4 +60,5 @@ protected:	//
 	unsigned int cnt; ///< A counter for the number of lights added to the list.
 	static unsigned int max_lights; ///< The maximum number of lights allowed in the scene, set to 8.
 	Material* m_shadowMaterial; ///< The material to be used for casting the object's shadow.
+	Shader* m_program{nullptr};
 };

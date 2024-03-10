@@ -103,10 +103,10 @@ void LIB_API SpotLight::attenuationConstant(float a)
 void LIB_API SpotLight::render(const glm::mat4& mat, void* flag)
 {
 	Light::render(mat);
-	glLightfv(m_lightNumber, GL_SPOT_DIRECTION, glm::value_ptr(m_direction));
-	glLightfv(m_lightNumber, GL_POSITION, glm::value_ptr(m_position));
-	glLightf(m_lightNumber, GL_CONSTANT_ATTENUATION, m_attenuationConstant); 
-	glLightf(m_lightNumber, GL_LINEAR_ATTENUATION, m_attenuationLinear); // default 0
-	glLightf(m_lightNumber, GL_QUADRATIC_ATTENUATION, m_attenuationQuadratic); // default 0
-	glLightfv(m_lightNumber, GL_SPOT_CUTOFF, &m_cutoff);
+	//glLightfv(m_lightNumber, GL_SPOT_DIRECTION, glm::value_ptr(m_direction));
+	//glLightfv(m_lightNumber, GL_POSITION, glm::value_ptr(m_position));
+	//glLightf(m_lightNumber, GL_CONSTANT_ATTENUATION, m_attenuationConstant); 
+	//glLightf(m_lightNumber, GL_LINEAR_ATTENUATION, m_attenuationLinear); // default 0
+	//glLightf(m_lightNumber, GL_QUADRATIC_ATTENUATION, m_attenuationQuadratic); // default 0
+	//glLightfv(m_lightNumber, GL_SPOT_CUTOFF, &m_cutoff);
 }

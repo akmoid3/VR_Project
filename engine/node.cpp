@@ -118,10 +118,12 @@ void LIB_API Node::pass(std::shared_ptr<List> list, glm::mat4 previousLevelMatri
 * @param matrix The result of multiplying the inverse of the final camera matrix by the final position matrix in world coordinates of this object. Default is an identity matrix.
 * @param flag This parameter is ignored in this implementation. Default is nullptr.
 */
-void LIB_API Node::render(const glm::mat4& matrix, void*)
+void LIB_API Node::render(const glm::mat4& matrix, void* )
 {
-	glMatrixMode(GL_MODELVIEW);
-	glLoadMatrixf(glm::value_ptr(matrix));
+	//glMatrixMode(GL_MODELVIEW);
+	//glLoadMatrixf(glm::value_ptr(matrix));
+	m_program->render(matrix,nullptr); // i parametri non servono a niente
+	m_program->setMatrix(m_program->getParamLocation("modelview"), matrix);
 }
 
 /**
@@ -162,6 +164,12 @@ void LIB_API Node::removeChild(Node* nodeToRemove) {
 		std::cout << "Node not found in the vector." << std::endl;
 	}
 }
+
+void LIB_API Node::setProgram(Shader* program)
+{
+	m_program = program;
+}
+
 
 /**
 * @brief Constructor for the Node class.

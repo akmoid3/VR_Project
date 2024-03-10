@@ -17,6 +17,8 @@
 #include <cmath>
 #include <ctime>
 
+
+
 ////////////
 // STATIC //
 ////////////
@@ -83,10 +85,12 @@ void LIB_API Mesh::loadLod() {
 	glBufferData(GL_ARRAY_BUFFER, vertex.size() * sizeof(glm::vec3), vertex.data(), GL_STATIC_DRAW);
 	
 	// Tell OpenGL that you want to use vertex arrays for the given attribute:
-	glEnableClientState(GL_VERTEX_ARRAY);
+	//glEnableClientState(GL_VERTEX_ARRAY);
 
-	glVertexPointer(3, GL_FLOAT, 0, nullptr); // Tells OpenGL to use last bound vbo
-
+	//glVertexPointer(3, GL_FLOAT, 0, nullptr); // Tells OpenGL to use last bound vbo
+	glVertexAttribPointer((GLuint)0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+	glEnableVertexAttribArray(0);
+/*
 	// TEXTURE COORDINATES VBO
 	glGenBuffers(1, &vbo_textcoord);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_textcoord);
@@ -95,12 +99,14 @@ void LIB_API Mesh::loadLod() {
 	glBufferData(GL_ARRAY_BUFFER, coordtext.size() * sizeof(glm::vec2), coordtext.data(), GL_STATIC_DRAW);
 	
 	// Tell OpenGL that you want to use vertex arrays for the given attribute:
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-
-	glTexCoordPointer(2, GL_FLOAT, 0, nullptr);
+	//glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	*/
+	//glTexCoordPointer(2, GL_FLOAT, 0, nullptr);
+	//glVertexAttribPointer((GLuint)0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+	//glEnableVertexAttribArray(0);
 
 	// NORMAL VECTOR VBO
-	glGenBuffers(1, &vbo_normal);
+	/*glGenBuffers(1, &vbo_normal);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_normal);
 
 	// Copy the vertex data from system to video memory:
@@ -108,18 +114,24 @@ void LIB_API Mesh::loadLod() {
 		normal.data(), GL_STATIC_DRAW);
 
 	// Tell OpenGL that you want to use vertex arrays for the given attribute:
-	glEnableClientState(GL_NORMAL_ARRAY);
+	//glEnableClientState(GL_NORMAL_ARRAY);
 
-	glNormalPointer(GL_FLOAT, 0, nullptr);
-
+	//glNormalPointer(GL_FLOAT, 0, nullptr);
+	//glVertexAttribPointer((GLuint)0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+	//glEnableVertexAttribArray(0);
+	*/
 	// FACE INDEX ARRAY VBO
 	// Generate a vertex buffer and bind it:
+	
 	glGenBuffers(1, &vbo_face);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo_face);
 
 	// Copy the face index data from system to video memory:
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, faces.size() * 3 * sizeof(unsigned int), faces.data(), GL_STATIC_DRAW);
-
+	//glVertexAttribPointer((GLuint)0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+	//glEnableVertexAttribArray(0);
+	
+	
 }
 
 /**
@@ -181,6 +193,7 @@ void LIB_API Mesh::render(const glm::mat4& m, void* flag)
 	// Use the face index array vbo inside vao for rendering:
 	glBindVertexArray(vao);
 	glDrawElements(GL_TRIANGLES, lods[0].faces().size() * 3, GL_UNSIGNED_INT, nullptr);
+	//glDrawArrays(GL_TRIANGLES, 0, lods[0].vertex().size());
 }
 
 /**

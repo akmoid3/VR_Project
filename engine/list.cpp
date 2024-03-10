@@ -37,6 +37,11 @@ void LIB_API List::resetList() {
 	cnt = 0;
 }
 
+void LIB_API List::setProgram(Shader* program)
+{
+	m_program = program;
+}
+
 /**
  * @brief Render the objects in the list.
  * @details This method renders the objects in the list. In the first pass, it renders the objects normally. In the second pass, it renders the shadows of the objects that cast shadows.
@@ -90,6 +95,7 @@ void LIB_API List::add(Object* object, glm::mat4 finalMatrix)
 	Light* l = dynamic_cast<Light*>(object);
 	if (l != 0) {
 		if (cnt < max_lights) {
+			l->setProgram(m_program);
 			m_list.push_front(std::make_pair(l, finalMatrix));
 			l->lightNumber(GL_LIGHT0 + (cnt++));
 		}
@@ -102,6 +108,7 @@ void LIB_API List::add(Object* object, glm::mat4 finalMatrix)
 
 	Mesh* m = dynamic_cast<Mesh*>(object);
 	if (m != 0) {
+		m->setProgram(m_program);
 		m_list.push_back(std::make_pair(m, finalMatrix));
 	}
 }
