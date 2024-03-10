@@ -288,6 +288,9 @@ void LIB_API closeCallback()
 	for (auto& tex : ovoreader.textures()) {
 		tex.second->deleteTexture();
 	}
+	delete shader;
+	delete fs;
+	delete vs;
 }
 
 
