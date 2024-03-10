@@ -154,6 +154,7 @@
     <ClInclude Include="orthographicCamera.h" />
     <ClInclude Include="ovoreader.h" />
     <ClInclude Include="perspectiveCamera.h" />
+    <ClInclude Include="shader.h" />
     <ClInclude Include="spotLight.h" />
     <ClInclude Include="texture.h" />
   </ItemGroup>
@@ -173,6 +174,7 @@
     <ClCompile Include="orthographicCamera.cpp" />
     <ClCompile Include="ovoreader.cpp" />
     <ClCompile Include="perspectiveCamera.cpp" />
+    <ClCompile Include="shader.cpp" />
     <ClCompile Include="spotLight.cpp" />
     <ClCompile Include="texture.cpp" />
   </ItemGroup>

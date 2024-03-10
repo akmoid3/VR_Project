@@ -66,6 +66,9 @@
     <ClInclude Include="keysDefinitions.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
+    <ClInclude Include="shader.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="engine.cpp">
@@ -117,6 +120,9 @@
       <Filter>File di origine</Filter>
     </ClCompile>
     <ClCompile Include="texture.cpp">
+      <Filter>File di origine</Filter>
+    </ClCompile>
+    <ClCompile Include="shader.cpp">
       <Filter>File di origine</Filter>
     </ClCompile>
   </ItemGroup>

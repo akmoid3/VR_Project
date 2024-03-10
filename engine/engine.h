@@ -58,6 +58,7 @@
 #include "lod.h"
 #include "texture.h"
 #include "keysDefinitions.h"
+#include "shader.h"
 
 #include <memory>
 
