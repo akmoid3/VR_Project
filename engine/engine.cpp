@@ -57,7 +57,6 @@ int mouseY = 0;
 unsigned int fps = 0;
 unsigned int frames = 0;
 
-
 //////////////
 // DLL MAIN //
 //////////////
@@ -225,6 +224,14 @@ static void reshapeCallback(int width, int height) {
 	glViewport(0, 0, width, height);
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	  
+/**
+ * Debug message callback for OpenGL. See https://www.opengl.org/wiki/Debug_Output
+ */
+void __stdcall debugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, GLvoid* userParam)
+{
+	std::cout << "OpenGL says: \"" << std::string(message) << "\"" << std::endl;
+}
 
 /**
  * @brief This callback is invoked when the mainloop is left and before the context is released.
@@ -363,6 +370,12 @@ bool LIB_API Engine::init(const std::string& titolo, unsigned int width, unsigne
 
 	// Init context:
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
+
+	// Init GLUT and set some context flags:
+	glutInitContextVersion(4, 4);
+	glutInitContextProfile(GLUT_CORE_PROFILE);
+	glutInitContextFlags(GLUT_DEBUG); // <-- Debug flag required by the OpenGL debug callback  
+
 	glutInitWindowPosition(100, 100);
 
 	// FreeGLUT can parse command-line params, in case:
@@ -379,22 +392,56 @@ bool LIB_API Engine::init(const std::string& titolo, unsigned int width, unsigne
 	// Create the window with a specific title:   
 	windowId = glutCreateWindow(titolo.c_str());
 
-	// Init Glew (*after* the context creation):
-	//glewExperimental = GL_TRUE;
-	GLenum err = glewInit();
-
-	if (err != GLEW_OK) {
-		std::cout << "Error loading GLEW" << std::endl;
-		return 0;
-	}
-
-	// OpenGL 2.1 is required:
-	if (!glewIsSupported("GL_VERSION_2_1"))
+	// Init all available OpenGL extensions:
+	// Init Glew (*after* the context creation):   
+	GLenum error = glewInit();
+	if (error != GLEW_OK)
 	{
-		std::cout << "OpenGL 2.1 not supported" << std::endl;
-		return 0;
+		std::cout << "[ERROR] " << glewGetErrorString(error) << std::endl;
+		return -1;
 	}
+	else
+		if (GLEW_VERSION_4_4)
+			std::cout << "Driver supports OpenGL 4.4\n" << std::endl;
+		else
+		{
+			std::cout << "[ERROR] OpenGL 4.4 not supported\n" << std::endl;
+			return -1;
+		}
+	// Register OpenGL debug callback:
+	
+	ENABLE_DEBUG; // CHIEDERE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	
+	// Log context properties:
+	std::cout << "OpenGL properties:" << std::endl;
+	std::cout << "   Vendor . . . :  " << glGetString(GL_VENDOR) << std::endl;
+	std::cout << "   Driver . . . :  " << glGetString(GL_RENDERER) << std::endl;
 
+	int oglVersion[2];
+	glGetIntegerv(GL_MAJOR_VERSION, &oglVersion[0]);
+	glGetIntegerv(GL_MINOR_VERSION, &oglVersion[1]);
+	std::cout << "   Version  . . :  " << glGetString(GL_VERSION) << " [" << oglVersion[0] << "." << oglVersion[1] << "]" << std::endl;
+
+	int oglContextProfile;
+	glGetIntegerv(GL_CONTEXT_PROFILE_MASK, &oglContextProfile);
+	if (oglContextProfile & GL_CONTEXT_CORE_PROFILE_BIT)
+		std::cout << "                :  " << "Core profile" << std::endl;
+	if (oglContextProfile & GL_CONTEXT_COMPATIBILITY_PROFILE_BIT)
+		std::cout << "                :  " << "Compatibility profile" << std::endl;
+
+	int oglContextFlags;
+	glGetIntegerv(GL_CONTEXT_FLAGS, &oglContextFlags);
+	if (oglContextFlags & GL_CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT)
+		std::cout << "                :  " << "Forward compatible" << std::endl;
+	if (oglContextFlags & GL_CONTEXT_FLAG_DEBUG_BIT)
+		std::cout << "                :  " << "Debug flag" << std::endl;
+	if (oglContextFlags & GL_CONTEXT_FLAG_ROBUST_ACCESS_BIT)
+		std::cout << "                :  " << "Robust access flag" << std::endl;
+	if (oglContextFlags & GL_CONTEXT_FLAG_NO_ERROR_BIT)
+		std::cout << "                :  " << "No error flag" << std::endl;
+
+	std::cout << "   GLSL . . . . :  " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
+	std::cout << std::endl;
 	// Register callbacks
 	glutReshapeFunc(reshapeCallback);
 	glutDisplayFunc(displayCallback);

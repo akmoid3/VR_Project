@@ -51,13 +51,13 @@ void LIB_API Texture::load()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 
 	int anisotropicLevel = 1;
-	if (strstr((const char*)glGetString(GL_EXTENSIONS), "GL_EXT_texture_filter_anisotropic"))
+	/*if (strstr((const char*)glGetString(GL_EXTENSIONS), "GL_EXT_texture_filter_anisotropic"))
 	{
 		std::cout << "   Anisotropic filtering supported" << std::endl;
 		glGetIntegerv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &anisotropicLevel);
 		std::cout << "   Anisotropic filtering max. level: " << anisotropicLevel << std::endl;
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, anisotropicLevel);
-	}
+	}*/
 
 	// Load an image from file:
 	std::string path = "../ovo/";

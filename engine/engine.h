@@ -34,6 +34,13 @@
 #define LIB_API  // Dummy declaration
 #endif
 
+#ifdef _DEBUG
+#define ENABLE_DEBUG glDebugMessageCallback((GLDEBUGPROC)debugCallback, nullptr); glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS)
+#else
+#define ENABLE_DEBUG 
+#endif
+
+
 //Include after ifdef _WINDOWS
 #include "node.h"
 #include "mesh.h"
