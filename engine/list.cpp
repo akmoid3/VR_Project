@@ -108,6 +108,7 @@ void LIB_API List::add(Object* object, glm::mat4 finalMatrix)
 
 	Mesh* m = dynamic_cast<Mesh*>(object);
 	if (m != 0) {
+		//getcurrentshader dentro shader
 		m->setProgram(m_program);
 		m_list.push_back(std::make_pair(m, finalMatrix));
 	}

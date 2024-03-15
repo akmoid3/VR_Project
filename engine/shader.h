@@ -12,7 +12,7 @@
  // #INCLUDE //
  //////////////
 #include "object.h"
-
+#include <map>
 // GLM:
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -83,6 +83,7 @@ private:	//
 
 	// OGL id:
 	unsigned int glId;
-
+	// lista value-key dove storare getparamlocation
+	std::map<const char*, int> m_paramCache;
 	
 };

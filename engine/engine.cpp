@@ -308,6 +308,7 @@ void LIB_API timerCallback(int value)
 
 	// Register the next update:
 	glutTimerFunc(1000, timerCallback, 0);
+	printf("%d \n", fps);
 }
 
 /**
@@ -738,9 +739,11 @@ void LIB_API Engine::begin2D()
 	// Set orthographic projection:
 	//glMatrixMode(GL_PROJECTION);
 	ortho->update(m_width, m_height);
+	shader->setMatrix(projLoc, ortho->projectionMatrix());
 	//glLoadMatrixf(glm::value_ptr(ortho->projectionMatrix()));
 	//glMatrixMode(GL_MODELVIEW);
 	//glLoadMatrixf(glm::value_ptr(glm::mat4(1.0f)));
+	shader->setMatrix(mvLoc, glm::mat4(1.0f));
 
 	// Disable lighting before rendering white 2D text:
 	glDisable(GL_LIGHTING);

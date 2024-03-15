@@ -61,5 +61,5 @@ protected://
 	glm::mat4 m_matrix; ///< The transformation matrix of the node relative to its parent node.
 	Node* m_parent; ///< A pointer to the parent node, initialized to nullptr.
 	std::vector<Node*> m_children; ///< A vector of pointers to the child nodes.
-	Shader* m_program{ nullptr };
+	Shader* m_program;
 };

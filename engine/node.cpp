@@ -122,7 +122,7 @@ void LIB_API Node::render(const glm::mat4& matrix, void* )
 {
 	//glMatrixMode(GL_MODELVIEW);
 	//glLoadMatrixf(glm::value_ptr(matrix));
-	m_program->render(matrix,nullptr); // i parametri non servono a niente
+	m_program->render(matrix,nullptr); // i parametri non servono a niente //Shader::setcurrentshader
 	m_program->setMatrix(m_program->getParamLocation("modelview"), matrix);
 }
 
@@ -177,6 +177,6 @@ void LIB_API Node::setProgram(Shader* program)
 * @param matrix The initial transformation matrix of the node relative to its parent.
 */
 LIB_API Node::Node(const std::string& name, const glm::mat4& matrix)
-	: Object(name), m_matrix{ matrix }, m_parent{ nullptr }
+	: Object(name), m_matrix{ matrix }, m_parent{ nullptr }, m_program{nullptr}
 {
 }

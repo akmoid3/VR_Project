@@ -71,12 +71,20 @@ int LIB_API Shader::getParamLocation(const char* name)
 		std::cout << "[ERROR] Invalid params" << std::endl;
 		return 0;
 	}
+	if (m_paramCache.find(name) != m_paramCache.end())
+	{
+		return m_paramCache[name];
+	}
+	else {
+		// Return location:
+		int r = glGetUniformLocation(glId, name);
+		if (r == -1)
+			std::cout << "[ERROR] Param '" << name << "' not found" << std::endl;
 
-	// Return location:
-	int r = glGetUniformLocation(glId, name);
-	if (r == -1)
-		std::cout << "[ERROR] Param '" << name << "' not found" << std::endl;
-	return r;
+		m_paramCache[name] = r;
+		return r;
+	}
+	
 }
 
 void LIB_API Shader::setMatrix(int param, const glm::mat4& mat)
