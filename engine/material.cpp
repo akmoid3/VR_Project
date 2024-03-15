@@ -125,6 +125,7 @@ void LIB_API Material::render(const glm::mat4& m, void* arg)
 	//glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, glm::value_ptr(m_specular));
 	//glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, m_shininess);
 
+
 	if (m_texture != nullptr) {
 		m_texture->render(m, arg);
 	}

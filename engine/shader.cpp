@@ -27,6 +27,7 @@
 // BODY OF CLASS Shader //
 //////////////////////////
 
+Shader* Shader::currentProgram = nullptr;
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /**
  * Constructor.
@@ -92,6 +93,11 @@ void LIB_API Shader::setMatrix(int param, const glm::mat4& mat)
 	glUniformMatrix4fv(param, 1, GL_FALSE, glm::value_ptr(mat));
 }
 
+void LIB_API Shader::setMatrix3(int param, const glm::mat3& mat)
+{
+	glUniformMatrix3fv(param, 1, GL_FALSE, glm::value_ptr(mat));
+}
+
 
 void LIB_API Shader::setFloat(int param, float value)
 {
@@ -112,6 +118,18 @@ void LIB_API Shader::setVec4(int param, const glm::vec4& vect)
 {
 	glUniform4fv(param, 1, glm::value_ptr(vect));
 }
+
+void LIB_API Shader::setCurrentProgram(Shader* program)
+{
+	currentProgram = program;
+	currentProgram->render(glm::mat4(1.0f),nullptr); // i parametri non servono a niente
+}
+
+Shader LIB_API *Shader::getCurrentProgram()
+{
+	return currentProgram;
+}
+
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

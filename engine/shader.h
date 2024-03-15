@@ -53,7 +53,10 @@ public: //
 
 	// Get/set:
 	int getParamLocation(const char* name);
+
 	void setMatrix(int param, const glm::mat4& mat);
+
+	void setMatrix3(int param, const glm::mat3& mat);
 
 	void setFloat(int param, float value);
 
@@ -62,8 +65,11 @@ public: //
 	void setVec3(int param, const glm::vec3& vect);
 
 	void setVec4(int param, const glm::vec4& vect);
+	
+	static void setCurrentProgram(Shader* program);
 
-
+	static Shader* getCurrentProgram();
+	
 	// Accessing data:
 	bool loadFromMemory(int kind, const char* data);
 	bool loadFromFile(int kind, const char* filename);
@@ -85,5 +91,6 @@ private:	//
 	unsigned int glId;
 	// lista value-key dove storare getparamlocation
 	std::map<const char*, int> m_paramCache;
+	static Shader* currentProgram;
 	
 };

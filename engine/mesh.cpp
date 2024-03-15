@@ -19,6 +19,7 @@
 
 
 
+
 ////////////
 // STATIC //
 ////////////
@@ -106,7 +107,7 @@ void LIB_API Mesh::loadLod() {
 	//glEnableVertexAttribArray(0);
 
 	// NORMAL VECTOR VBO
-	/*glGenBuffers(1, &vbo_normal);
+	glGenBuffers(1, &vbo_normal);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_normal);
 
 	// Copy the vertex data from system to video memory:
@@ -117,9 +118,9 @@ void LIB_API Mesh::loadLod() {
 	//glEnableClientState(GL_NORMAL_ARRAY);
 
 	//glNormalPointer(GL_FLOAT, 0, nullptr);
-	//glVertexAttribPointer((GLuint)0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-	//glEnableVertexAttribArray(0);
-	*/
+	glVertexAttribPointer((GLuint)1, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+	glEnableVertexAttribArray(1);
+	
 	// FACE INDEX ARRAY VBO
 	// Generate a vertex buffer and bind it:
 	

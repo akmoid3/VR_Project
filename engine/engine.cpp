@@ -65,6 +65,7 @@ int projLoc = -1; // -1 means 'not assigned', as 0 is a valid location, per sape
 int mvLoc = -1;
 
 
+
 /////////////
 // SHADERS //
 /////////////
@@ -73,29 +74,70 @@ int mvLoc = -1;
 const char* vertShader = R"(
    #version 440 core
 
+   // Uniforms:
    uniform mat4 projection;
    uniform mat4 modelview;
+   uniform mat3 normalMatrix;
 
+   // Attributes:
    layout(location = 0) in vec3 in_Position;
-  
+   layout(location = 1) in vec3 in_Normal;
+
+   // Varying:
+   out vec4 fragPosition;
+   out vec3 normal;   
 
    void main(void)
    {
-      gl_Position = projection * modelview * vec4(in_Position, 1.0f);
-      
+      fragPosition = modelview * vec4(in_Position, 1.0f);
+      gl_Position = projection * fragPosition;      
+      normal = normalMatrix * in_Normal;
    }
 )";
 
 ////////////////////////////
 const char* fragShader = R"(
    #version 440 core
+
+   in vec4 fragPosition;
+   in vec3 normal;   
    
-   out vec4 frag_Output;
+   out vec4 fragOutput;
+
+   // Material properties:
+   uniform vec3 matEmission;
+   uniform vec3 matAmbient;
+   uniform vec3 matDiffuse;
+   uniform vec3 matSpecular;
+   uniform float matShininess;
+
+   // Light properties:
+   uniform vec3 lightPosition; 
+   uniform vec3 lightAmbient; 
+   uniform vec3 lightDiffuse; 
+   uniform vec3 lightSpecular;
 
    void main(void)
-   {
-      vec4 color = vec4(1.0f, 0.0f, 0.0f, 1.0f);
-      frag_Output = color;
+   {      
+      // Ambient term:
+      vec3 fragColor = matEmission + matAmbient * lightAmbient;
+
+      // Diffuse term:
+      vec3 _normal = normalize(normal);
+      vec3 lightDirection = normalize(lightPosition - fragPosition.xyz);      
+      float nDotL = dot(lightDirection, _normal);   
+      if (nDotL > 0.0f)
+      {
+         fragColor += matDiffuse * nDotL * lightDiffuse;
+      
+         // Specular term:
+         vec3 halfVector = normalize(lightDirection + normalize(-fragPosition.xyz));                     
+         float nDotHV = dot(_normal, halfVector);         
+         fragColor += matSpecular * pow(nDotHV, matShininess) * lightSpecular;
+      } 
+      
+      // Final color:
+      fragOutput = vec4(fragColor, 1.0f);
    }
 )";
 //////////////
@@ -535,10 +577,12 @@ bool LIB_API Engine::init(const std::string& titolo, unsigned int width, unsigne
 
 	// Setup shader program:
 	// bisognerebbe fare qualche controllo
+	
 	shader = new Shader("program");
 	shader->build(vs, fs);
-	shader->render(glm::mat4(1.0f), nullptr);
+	Shader::setCurrentProgram(shader);
 	shader->bind(0, "in_Position");
+	shader->bind(1, "in_Normal");
 
 	// Get shader variable locations:
 	projLoc = shader->getParamLocation("projection");

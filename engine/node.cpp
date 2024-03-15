@@ -122,8 +122,9 @@ void LIB_API Node::render(const glm::mat4& matrix, void* )
 {
 	//glMatrixMode(GL_MODELVIEW);
 	//glLoadMatrixf(glm::value_ptr(matrix));
-	m_program->render(matrix,nullptr); // i parametri non servono a niente //Shader::setcurrentshader
-	m_program->setMatrix(m_program->getParamLocation("modelview"), matrix);
+	Shader::getCurrentProgram()->setMatrix(Shader::getCurrentProgram()->getParamLocation("modelview"), matrix); // getcurrent è null
+	glm::mat3 normalMatrix = glm::inverseTranspose(matrix);
+	Shader::getCurrentProgram()->setMatrix3(Shader::getCurrentProgram()->getParamLocation("normalMatrix"), normalMatrix);
 }
 
 /**

@@ -51,6 +51,8 @@ void LIB_API List::setProgram(Shader* program)
  */
 void LIB_API List::render(const glm::mat4& c_inverse, void* flag)
 {
+	Shader::setCurrentProgram(m_program);
+
 	// First pass: Render objects normally
 	for (auto& pair : m_list) {
 		Object* obj = pair.first;
@@ -95,7 +97,6 @@ void LIB_API List::add(Object* object, glm::mat4 finalMatrix)
 	Light* l = dynamic_cast<Light*>(object);
 	if (l != 0) {
 		if (cnt < max_lights) {
-			l->setProgram(m_program);
 			m_list.push_front(std::make_pair(l, finalMatrix));
 			l->lightNumber(GL_LIGHT0 + (cnt++));
 		}
@@ -109,7 +110,6 @@ void LIB_API List::add(Object* object, glm::mat4 finalMatrix)
 	Mesh* m = dynamic_cast<Mesh*>(object);
 	if (m != 0) {
 		//getcurrentshader dentro shader
-		m->setProgram(m_program);
 		m_list.push_back(std::make_pair(m, finalMatrix));
 	}
 }
