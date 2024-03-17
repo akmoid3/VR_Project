@@ -9,7 +9,7 @@
 #include "engine.h"
 #define FREEGLUT_STATIC
 #include <GL/freeglut.h>
-
+#include <iostream>
  ////////////////////////////////////
  // BODY OF CLASS OmniLight        //
  ////////////////////////////////////
@@ -91,7 +91,10 @@ void LIB_API OmniLight::cutoff(float a)
 */
 void LIB_API OmniLight::render(const glm::mat4& mat, void* flag)
 {
+	Engine::getProgramOmni();
 	Light::render(mat);
+	Shader::getCurrentProgram()->setVec3(Shader::getCurrentProgram()->getParamLocation("lightPosition"), m_position);
+
 	//glLightfv(m_lightNumber, GL_POSITION, glm::value_ptr(m_position));
 	//glLightf(m_lightNumber, GL_CONSTANT_ATTENUATION, m_attenuationConstant); // default 1
 	//glLightf(m_lightNumber, GL_LINEAR_ATTENUATION, m_attenuationLinear); // default 0

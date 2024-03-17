@@ -11,6 +11,7 @@
 #include <iostream>
 #include "light.h"
 
+
 ////////////
 // STATIC //
 ////////////
@@ -33,7 +34,13 @@ unsigned int Light::cnt = 0;
 void LIB_API Light::render(const glm::mat4& m, void*)
 {
 	Node::render(m);
+
 	glEnable(m_lightNumber);
+
+	Shader::getCurrentProgram()->setVec3(Shader::getCurrentProgram()->getParamLocation("lightAmbient"), m_ambient);
+	Shader::getCurrentProgram()->setVec3(Shader::getCurrentProgram()->getParamLocation("lightDiffuse"), m_diffuse);
+	Shader::getCurrentProgram()->setVec3(Shader::getCurrentProgram()->getParamLocation("lightSpecular"), m_specular);
+	
 	//glLightfv(m_lightNumber, GL_AMBIENT, glm::value_ptr(m_ambient));
 	//glLightfv(m_lightNumber, GL_DIFFUSE, glm::value_ptr(m_diffuse));
 	//glLightfv(m_lightNumber, GL_SPECULAR, glm::value_ptr(m_specular));

@@ -29,17 +29,40 @@ unsigned int List::max_lights = 8;
 void LIB_API List::resetList() {
 
 	// Spegne tutte le luci
-	for (unsigned int i = 0; i < cnt; i++)
+	for (unsigned int i = 0; i < nrOfLights; i++)
 	{
 		glDisable(GL_LIGHT0 + i);
 	}
 	m_list.clear();
-	cnt = 0;
+	nrOfLights = 0;
 }
 
 void LIB_API List::setProgram(Shader* program)
 {
 	m_program = program;
+}
+
+unsigned int LIB_API List::getNrOfLights() const
+{
+	return nrOfLights;
+}
+
+std::pair<Object*, glm::mat4> LIB_API List::getElem(unsigned int l)
+{
+	auto it = m_list.begin();
+	std::advance(it, l);
+	return *it;
+}
+
+void LIB_API List::renderMeshes(const glm::mat4& c_inverse, void* flag)
+{
+	// First pass: Render objects normally
+	for (unsigned int i = nrOfLights; i < m_list.size(); i++) {
+		std::pair<Object*, glm::mat4> pair = getElem(i);
+		Object* obj = pair.first;
+		glm::mat4 mat = pair.second;
+		obj->render(c_inverse * mat, flag);
+	}
 }
 
 /**
@@ -81,6 +104,7 @@ void LIB_API List::render(const glm::mat4& c_inverse, void* flag)
 	}
 }
 
+
 /**
  * @brief Add an object to the render list.
  * @details This method adds an object to be rendered in a 3D scene to the list. 
@@ -96,9 +120,9 @@ void LIB_API List::add(Object* object, glm::mat4 finalMatrix)
 	// Controlla che le luci da renderizzare non siano più di 8
 	Light* l = dynamic_cast<Light*>(object);
 	if (l != 0) {
-		if (cnt < max_lights) {
+		if (nrOfLights < max_lights) {
 			m_list.push_front(std::make_pair(l, finalMatrix));
-			l->lightNumber(GL_LIGHT0 + (cnt++));
+			l->lightNumber(GL_LIGHT0 + (nrOfLights++));
 		}
 		else
 		{
@@ -129,7 +153,7 @@ std::list<std::pair<Object*, glm::mat4>> List::getList()
  * a counter for the number of the lights added to the scene of 0, a maximum number of lights of 8, 
  * and a default shadow material.
  */
-LIB_API List::List() : Object("list"), cnt{ 0 }, m_shadowMaterial{new Material("Shadow")}
+LIB_API List::List() : Object("list"), nrOfLights{ 0 }, m_shadowMaterial{new Material("Shadow")}
 {
 	m_shadowMaterial->emission(0.0f, 0.0f, 0.0f, 1.0f);
 	m_shadowMaterial->specular(0.0f, 0.0f, 0.0f, 1.0f);
@@ -149,7 +173,7 @@ LIB_API List::~List()
  * @brief Copy constructor for the List class.
  * @param other The List object to be copied.
  */
-LIB_API List::List(const List& other) : Object(other), m_list(other.m_list), cnt(other.cnt) {
+LIB_API List::List(const List& other) : Object(other), m_list(other.m_list), nrOfLights(other.nrOfLights) {
 	m_shadowMaterial = new Material(*other.m_shadowMaterial);
 }
 
@@ -162,7 +186,7 @@ List LIB_API & List::operator=(const List& other) {
 	if (this != &other) {
 		Object::operator=(other);
 		m_list = other.m_list;
-		cnt = other.cnt;
+		nrOfLights = other.nrOfLights;
 		delete m_shadowMaterial;
 		m_shadowMaterial = new Material(*other.m_shadowMaterial);
 	}

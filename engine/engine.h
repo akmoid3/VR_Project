@@ -99,6 +99,9 @@ public:	  //
 	bool free();
 	void begin3D(Camera* camera);
 	void end3D();
+	static void getProgramSpot();
+	static void getProgramOmni();
+	static void getProgramDirect();
 
 	Node* load(std::string);
 	void begin2D();

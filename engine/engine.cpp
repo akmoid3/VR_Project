@@ -59,7 +59,9 @@ unsigned int frames = 0;
 
 // Shaders:
 Shader* vs = nullptr;
-Shader* fs = nullptr;
+Shader* fsOmni = nullptr;
+Shader* fsSpot = nullptr;
+Shader* fsDir = nullptr;
 Shader* shader = nullptr; // singolo programma, con sia vs e fs, si potrebbe fare la classe program
 int projLoc = -1; // -1 means 'not assigned', as 0 is a valid location, per sapere dove trovare le variabili
 int mvLoc = -1;
@@ -96,7 +98,7 @@ const char* vertShader = R"(
 )";
 
 ////////////////////////////
-const char* fragShader = R"(
+const char* fragShaderOmni = R"(
    #version 440 core
 
    in vec4 fragPosition;
@@ -138,6 +140,88 @@ const char* fragShader = R"(
       
       // Final color:
       fragOutput = vec4(fragColor, 1.0f);
+   }
+)";
+
+////////////////////////////
+const char* fragShaderDir = R"(
+   #version 440 core
+// Varying variables from the vertex shader:
+in vec4 fragPos;
+in vec3 normal;
+out vec4 fragOutput;
+// Material properties:
+uniform vec3 matEmission;
+uniform vec3 matAmbient;
+uniform vec3 matDiffuse;
+uniform vec3 matSpecular;
+uniform float matShininess;
+// Light properties:
+uniform vec3 lightDir; // Direction of the directional light
+uniform vec3 lightAmbient;
+uniform vec3 lightDiffuse;
+uniform vec3 lightSpecular;
+void main(void)
+{
+    // Emission and ambient:
+    vec3 fragColor = matEmission + matAmbient * lightAmbient;
+    // Diffuse term:
+    vec3 _normal = normalize(normal);
+    float nDotL = max(dot(_normal, -lightDir), 0.0);
+    fragColor += matDiffuse * nDotL * lightDiffuse;
+    // Specular term:
+    vec3 viewDir = normalize(-fragPos.xyz);
+    vec3 reflectDir = reflect(lightDir, _normal);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), matShininess);
+    fragColor += matSpecular * spec * lightSpecular;
+    fragOutput = vec4(fragColor, 1.0f);
+}
+)";
+
+////////////////////////////
+const char* fragShaderSpot = R"(
+   #version 440 core
+
+   in vec4 fragPosition;
+   in vec3 normal;   
+   
+   out vec4 fragOutput;
+
+   // Material properties:
+   uniform vec3 matEmission;
+   uniform vec3 matAmbient;
+   uniform vec3 matDiffuse;
+   uniform vec3 matSpecular;
+   uniform float matShininess;
+
+   // Light properties:
+   uniform vec3 lightPosition; 
+   uniform vec3 lightAmbient; 
+   uniform vec3 lightDiffuse; 
+   uniform vec3 lightSpecular;
+   uniform vec3 lightDir;
+   uniform vec3 lightCutOff;
+
+   void main(void)
+   {      
+      // Ambient term:
+      vec3 fragColor = matEmission + matAmbient * lightAmbient;
+
+      // Diffuse term:
+      vec3 _normal = normalize(normal);
+      vec3 lightDirection = normalize(lightPosition - fragPosition.xyz);      
+      float nDotL = dot(lightDirection, _normal);   
+	// Spotlight effect:
+    float angle = degrees(acos(dot(-lightDirection, lightDir)));
+      if (angle < lightCutOff && nDotL > 0.0f)
+    {
+        fragColor += matDiffuse * nDotL * lightDiffuse;
+        // Specular term:
+        vec3 halfVector = normalize(lightToFragment + normalize(-fragPos.xyz));
+        float nDotHV = dot(_normal, halfVector);
+        fragColor += matSpecular * pow(nDotHV, matShininess) * lightSpecular;
+		fragOutput = vec4(fragColor, 1.0f);
+
    }
 )";
 //////////////
@@ -296,7 +380,7 @@ void LIB_API Engine::list(std::shared_ptr<List> list) {
 
 /**
  * @brief This callback is invoked each time the window gets resized (and once also when created).
- * 
+ *
  * This function is registered as a callback in the Engine::init() method.
  * @param width new window width
  * @param height new window height
@@ -319,7 +403,7 @@ void __stdcall debugCallback(GLenum source, GLenum type, GLuint id, GLenum sever
 
 /**
  * @brief This callback is invoked when the mainloop is left and before the context is released.
- * 
+ *
  * This function is registered as a callback in the Engine::init() method.
  */
 void LIB_API closeCallback()
@@ -331,14 +415,14 @@ void LIB_API closeCallback()
 		tex.second->deleteTexture();
 	}
 	delete shader;
-	delete fs;
+	delete fsOmni;
 	delete vs;
 }
 
 
 /**
  * @brief This callback is invoked once each second.
- * 
+ *
  * This function is registered as a callback in the Engine::init() method. It is used for calculating the FPS.
  * @param value passepartout value
  */
@@ -354,9 +438,9 @@ void LIB_API timerCallback(int value)
 }
 
 /**
- * @brief This is the main rendering routine automatically invoked by FreeGLUT. 
+ * @brief This is the main rendering routine automatically invoked by FreeGLUT.
  * In this implementation, it is intentionally left empty.
- * 
+ *
  * This function is registered as a callback in the Engine::init() method.
  */
 static void displayCallback() {
@@ -368,7 +452,7 @@ static void displayCallback() {
 
 /**
  * @brief Sets the keyboard callback.
- * @details This function allows for passing or defining a custom keyboard callback. 
+ * @details This function allows for passing or defining a custom keyboard callback.
  * The provided callback function will be called when keyboard events occur.
  * @param callback Function pointer to the keyboard callback
  */
@@ -378,7 +462,7 @@ void LIB_API Engine::setKeyboardCallback(void (*callback)(unsigned char, int, in
 
 /**
  * @brief Sets the special callback.
- * @details This function allows for passing or defining a custom special callback. 
+ * @details This function allows for passing or defining a custom special callback.
  * The provided callback function will be called when special events occur.
  * @param callback Function pointer to the special callback
  */
@@ -389,7 +473,7 @@ void LIB_API Engine::setSpecialCallback(void(*callback)(int, int, int))
 
 /**
  * @brief Sets the mouse callback.
- * @details This function allows for passing or defining a custom mouse callback. 
+ * @details This function allows for passing or defining a custom mouse callback.
  * The provided callback function will be called when mouse events occur.
  * @param callback Function pointer to the mouse callback
  */
@@ -410,7 +494,7 @@ void LIB_API Engine::setMouseCallback(void(*callback)(int, int, int, int))
  */
 void LIB_API Engine::activateMouseObjectSelection(int _mouseX, int _mouseY) {
 	mouseX = _mouseX;
-	mouseY= _mouseY;
+	mouseY = _mouseY;
 	objectSelection = true;
 }
 
@@ -421,12 +505,12 @@ void LIB_API Engine::activateMouseObjectSelection(int _mouseX, int _mouseY) {
  * @param name Name of the Node to find.
  * @return Node* Pointer to the found Node. If no Node with the given name is found, returns nullptr.
  */
-Node LIB_API * Engine::findNode(Node* node, const std::string& name)
+Node LIB_API* Engine::findNode(Node* node, const std::string& name)
 {
 	if (node->name().compare(name) == 0)
 		return node;
-	
-	for (auto& child : node->children() ){
+
+	for (auto& child : node->children()) {
 		Node* result = findNode(child, name);
 		if (result != nullptr) {
 			// Node found 
@@ -497,9 +581,9 @@ bool LIB_API Engine::init(const std::string& titolo, unsigned int width, unsigne
 			return -1;
 		}
 	// Register OpenGL debug callback:
-	
+
 	ENABLE_DEBUG; // CHIEDERE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	
+
 	// Log context properties:
 	std::cout << "OpenGL properties:" << std::endl;
 	std::cout << "   Vendor . . . :  " << glGetString(GL_VENDOR) << std::endl;
@@ -555,11 +639,14 @@ bool LIB_API Engine::init(const std::string& titolo, unsigned int width, unsigne
 	// Enable lighting
 	glEnable(GL_LIGHTING);
 
+	// Enable for the multipass rendering
+	glDepthFunc(GL_LEQUAL);
+
 	// Init FreeImage:
 	FreeImage_Initialise(); // Static lib only
 
 	// Call this after creating your OpenGL context
-	
+
 	// Check OpenGL version:
 	std::cout << "OpenGL context" << std::endl;
 	std::cout << "   version  . . : " << glGetString(GL_VERSION) << std::endl;
@@ -572,14 +659,18 @@ bool LIB_API Engine::init(const std::string& titolo, unsigned int width, unsigne
 	vs->loadFromMemory(Shader::TYPE_VERTEX, vertShader);
 
 	// Compile fragment shader:
-	fs = new Shader("fragment_shader");
-	fs->loadFromMemory(Shader::TYPE_FRAGMENT, fragShader);
+	fsOmni = new Shader("fragment_shader");
+	fsOmni->loadFromMemory(Shader::TYPE_FRAGMENT, fragShaderOmni);
+
+	// Compile fragment shader:
+	fsSpot = new Shader("fragment_shader");
+	fsSpot->loadFromMemory(Shader::TYPE_FRAGMENT, fragShaderSpot);
 
 	// Setup shader program:
 	// bisognerebbe fare qualche controllo
-	
+
 	shader = new Shader("program");
-	shader->build(vs, fs);
+	shader->build(vs, fsOmni);
 	Shader::setCurrentProgram(shader);
 	shader->bind(0, "in_Position");
 	shader->bind(1, "in_Normal");
@@ -666,7 +757,7 @@ bool LIB_API Engine::free()
 /**
  * @brief Begins 3D rendering with a specified camera.
  * @param camera The camera to use for rendering.
- * @details This function sets up the necessary OpenGL state for 3D rendering. 
+ * @details This function sets up the necessary OpenGL state for 3D rendering.
  * It updates the camera with the current window dimensions, loads the camera's projection matrix into the OpenGL state, and calculates the inverse of the camera's final transformation matrix.
  */
 void LIB_API Engine::begin3D(Camera* camera) {
@@ -676,70 +767,70 @@ void LIB_API Engine::begin3D(Camera* camera) {
 	shader->setMatrix(projLoc, camera->projectionMatrix());
 	//glLoadMatrixf(glm::value_ptr(camera->projectionMatrix()));
 	c_inverse = inverse(camera->getFinalMatrix());
-	
+
 }
 
 
 /**
  * @brief Selects an object in the scene using color picking.
- * @details This function is activated when `Engine::activateMouseObjectSelection()` is called and is used within the `Engine::end3D()` method. 
- * It uses color picking to select objects in the window. The function first clears the back buffer and disables lighting and texture mapping. 
- * It then reads the pixel at the mouse click coordinates and reconstructs the ID of the selected object. After finding the matching object in the list, it can be retrieved using Engine::getSelectedObject(). 
+ * @details This function is activated when `Engine::activateMouseObjectSelection()` is called and is used within the `Engine::end3D()` method.
+ * It uses color picking to select objects in the window. The function first clears the back buffer and disables lighting and texture mapping.
+ * It then reads the pixel at the mouse click coordinates and reconstructs the ID of the selected object. After finding the matching object in the list, it can be retrieved using Engine::getSelectedObject().
  * Finally, it clears the back buffer again and enables lighting and texture mapping for default rendering.
  */
 void LIB_API Engine::selectObject() {
 
-		// Clear the back buffer 
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	// Clear the back buffer 
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		// Disable lighting and texture mapping
-		glDisable(GL_LIGHTING);
-		glDisable(GL_TEXTURE_2D);
+	// Disable lighting and texture mapping
+	glDisable(GL_LIGHTING);
+	glDisable(GL_TEXTURE_2D);
 
-		m_list->render(c_inverse, (void*)objectSelection);
+	m_list->render(c_inverse, (void*)objectSelection);
 
-		// Useful for debugging
-		// glutSwapBuffers();
-		// Sleep(5000);
+	// Useful for debugging
+	// glutSwapBuffers();
+	// Sleep(5000);
 
-		// Read pixel at mouse click coordinates
-		unsigned char pixel[4];
-		glReadPixels(mouseX, Engine::instance().m_height - mouseY, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixel);
+	// Read pixel at mouse click coordinates
+	unsigned char pixel[4];
+	glReadPixels(mouseX, Engine::instance().m_height - mouseY, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixel);
 
-		// Forcing alpha channel to 0 to avoid reading issues
-		pixel[3] = 0;
-		std::cout << "mouseX: " << mouseX << std::endl;
-		std::cout << "mouseY: " << Engine::instance().m_height - mouseY << std::endl;
-
-
-		// Reconstruct the 32-bit unsigned int ID
-		unsigned int idReconstructed;
-		memcpy(&idReconstructed, pixel, sizeof(idReconstructed));
-		std::cout << "Reconstructed ID in engine: " << idReconstructed << std::endl;
+	// Forcing alpha channel to 0 to avoid reading issues
+	pixel[3] = 0;
+	std::cout << "mouseX: " << mouseX << std::endl;
+	std::cout << "mouseY: " << Engine::instance().m_height - mouseY << std::endl;
 
 
-		// Search list for match
-		std::string objectName;
-		for (const auto& pair : m_list->getList()) {
-			Object* obj = pair.first;
-			unsigned int id = obj->id();
-			if (id == idReconstructed) {
-				Mesh* mesh = dynamic_cast<Mesh*>(obj);
-				if (mesh == 0) {
-					break;
-				}
-				currentSelectedObject = mesh;
-			   std::cout << "Selected object name: " << mesh->name() << std::endl;
+	// Reconstruct the 32-bit unsigned int ID
+	unsigned int idReconstructed;
+	memcpy(&idReconstructed, pixel, sizeof(idReconstructed));
+	std::cout << "Reconstructed ID in engine: " << idReconstructed << std::endl;
+
+
+	// Search list for match
+	std::string objectName;
+	for (const auto& pair : m_list->getList()) {
+		Object* obj = pair.first;
+		unsigned int id = obj->id();
+		if (id == idReconstructed) {
+			Mesh* mesh = dynamic_cast<Mesh*>(obj);
+			if (mesh == 0) {
+				break;
 			}
+			currentSelectedObject = mesh;
+			std::cout << "Selected object name: " << mesh->name() << std::endl;
 		}
+	}
 
 
-		// Clear the back buffer again before default rendering
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	// Clear the back buffer again before default rendering
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		// Enable lighting and texture mapping for default rendering
-		glEnable(GL_LIGHTING);
-		glEnable(GL_TEXTURE_2D);
+	// Enable lighting and texture mapping for default rendering
+	glEnable(GL_LIGHTING);
+	glEnable(GL_TEXTURE_2D);
 
 }
 
@@ -755,11 +846,54 @@ void LIB_API Engine::end3D()
 		selectObject();
 		objectSelection = false;
 	}
-	
+
 	// Default rendering
 	m_list->render(c_inverse, (void*)objectSelection);
 	m_list->resetList();
 
+	for (unsigned int l = 0; l < m_list->getNrOfLights(); l++) {
+		// Enable addictive blending from light 1 on:
+		if (l == 1)
+		{
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_ONE, GL_ONE);
+		}
+		// Render one light at time
+		std::pair<Object*, glm::mat4> element = m_list->getElem(l);
+		Object* obj = element.first;
+		glm::mat4 mat = element.second;
+		obj->render(c_inverse * mat, nullptr); // FLAGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG????????????????????????????????????????????????????????????????????????!
+
+		
+		// Render meshes
+		m_list->renderMeshes(c_inverse * mat, nullptr);
+	}
+
+	// Disable blending, in case we used it:
+	if (m_list->getNrOfLights() > 1)
+		glDisable(GL_BLEND);
+
+}
+
+void LIB_API Engine::getProgramSpot()
+{
+	shader->build(vs, fsSpot);
+	shader->render(glm::mat4(), nullptr);
+	Shader::setCurrentProgram(shader);
+}
+
+void LIB_API Engine::getProgramOmni()
+{
+	shader->build(vs, fsOmni);
+	shader->render(glm::mat4(), nullptr);
+	Shader::setCurrentProgram(shader);
+}
+
+void LIB_API Engine::getProgramDirect()
+{
+	shader->build(vs, fsDir);
+	shader->render(glm::mat4(), nullptr);
+	Shader::setCurrentProgram(shader);
 }
 
 /**

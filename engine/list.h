@@ -42,7 +42,9 @@ public:	  //
 	std::list<std::pair<Object*, glm::mat4>> getList();
 	void resetList();
 	void setProgram(Shader* program);
-
+	unsigned int getNrOfLights() const;
+	std::pair<Object*, glm::mat4> getElem(unsigned int l);
+	void renderMeshes(const glm::mat4& c_inverse, void* flag);
 	List();
 	~List();
 
@@ -57,7 +59,7 @@ protected:	//
 
 	// Internal vars:
 	std::list<std::pair<Object*, glm::mat4>> m_list; ///< The list of objects.
-	unsigned int cnt; ///< A counter for the number of lights added to the list.
+	unsigned int nrOfLights; ///< A counter for the number of lights added to the list.
 	static unsigned int max_lights; ///< The maximum number of lights allowed in the scene, set to 8.
 	Material* m_shadowMaterial; ///< The material to be used for casting the object's shadow.
 	Shader* m_program{nullptr};

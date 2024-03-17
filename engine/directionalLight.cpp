@@ -55,6 +55,8 @@ void LIB_API DirectionalLight::position(float x, float y, float z)
 */
 void LIB_API DirectionalLight::render(const glm::mat4& mat, void* flag)
 {
+	Engine::getProgramDirect();
 	Light::render(mat);
+	Shader::getCurrentProgram()->setVec3(Shader::getCurrentProgram()->getParamLocation("lightPosition"), m_position);
 	//glLightfv(m_lightNumber, GL_POSITION, glm::value_ptr(m_position));
 }
