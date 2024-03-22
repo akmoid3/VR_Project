@@ -75,6 +75,8 @@ public: //
 	bool loadFromFile(int kind, const char* filename);
 	bool build(Shader* vertexShader, Shader* fragmentShader);
 
+	void switchFragmentShader(Shader* prevFragmentShader, Shader* newFragmentShader);
+
 	void bind(int location, const char* attribName);
 
 	// Ereditato tramite Object

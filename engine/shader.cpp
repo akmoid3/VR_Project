@@ -81,8 +81,8 @@ int LIB_API Shader::getParamLocation(const char* name)
 		int r = glGetUniformLocation(glId, name);
 		if (r == -1)
 			std::cout << "[ERROR] Param '" << name << "' not found" << std::endl;
-
-		m_paramCache[name] = r;
+		else
+			m_paramCache[name] = r;
 		return r;
 	}
 	

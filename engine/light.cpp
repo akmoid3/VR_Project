@@ -35,7 +35,7 @@ void LIB_API Light::render(const glm::mat4& m, void*)
 {
 	Node::render(m);
 
-	glEnable(m_lightNumber);
+	//glEnable(m_lightNumber);
 
 	Shader::getCurrentProgram()->setVec3(Shader::getCurrentProgram()->getParamLocation("lightAmbient"), m_ambient);
 	Shader::getCurrentProgram()->setVec3(Shader::getCurrentProgram()->getParamLocation("lightDiffuse"), m_diffuse);

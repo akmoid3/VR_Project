@@ -52,6 +52,7 @@ Camera* ortho = new OrthographicCamera("camera", glm::mat4{ 1.0f }, -1.0f, 1.0f)
 bool objectSelection{ false };
 int mouseX = 0;
 int mouseY = 0;
+Camera* currentCamera = nullptr;
 
 // FPS:
 unsigned int fps = 0;
@@ -59,12 +60,18 @@ unsigned int frames = 0;
 
 // Shaders:
 Shader* vs = nullptr;
+Shader* fs = nullptr;
 Shader* fsOmni = nullptr;
 Shader* fsSpot = nullptr;
 Shader* fsDir = nullptr;
-Shader* shader = nullptr; // singolo programma, con sia vs e fs, si potrebbe fare la classe program
+Shader* progOmni = nullptr; 
+Shader* progDir = nullptr; 
+Shader* progSpot = nullptr; 
 int projLoc = -1; // -1 means 'not assigned', as 0 is a valid location, per sapere dove trovare le variabili
 int mvLoc = -1;
+
+Shader* dirShader = nullptr;
+Shader* spotShader = nullptr;
 
 
 
@@ -146,35 +153,46 @@ const char* fragShaderOmni = R"(
 ////////////////////////////
 const char* fragShaderDir = R"(
    #version 440 core
+
 // Varying variables from the vertex shader:
-in vec4 fragPos;
+in vec4 fragPosition;
 in vec3 normal;
 out vec4 fragOutput;
+
 // Material properties:
 uniform vec3 matEmission;
 uniform vec3 matAmbient;
 uniform vec3 matDiffuse;
 uniform vec3 matSpecular;
 uniform float matShininess;
+
 // Light properties:
-uniform vec3 lightDir; // Direction of the directional light
+uniform vec3 lightDirection; // Direction of the infinite light source
 uniform vec3 lightAmbient;
 uniform vec3 lightDiffuse;
 uniform vec3 lightSpecular;
+
 void main(void)
 {
     // Emission and ambient:
     vec3 fragColor = matEmission + matAmbient * lightAmbient;
+
     // Diffuse term:
     vec3 _normal = normalize(normal);
-    float nDotL = max(dot(_normal, -lightDir), 0.0);
-    fragColor += matDiffuse * nDotL * lightDiffuse;
-    // Specular term:
-    vec3 viewDir = normalize(-fragPos.xyz);
-    vec3 reflectDir = reflect(lightDir, _normal);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), matShininess);
-    fragColor += matSpecular * spec * lightSpecular;
-    fragOutput = vec4(fragColor, 1.0f);
+    float nDotL = dot(_normal, -lightDirection);
+    if (nDotL > 0.0) {
+        fragColor += matDiffuse * nDotL * lightDiffuse;
+
+       // Specular term:
+		vec3 viewDir = normalize(-fragPosition.xyz);
+		vec3 lightDir = -lightDirection; // Direction from the fragment to the light
+		vec3 halfVector = normalize(viewDir + lightDir); // Half vector between view and light directions
+		float nDotH = dot(_normal, halfVector); // Dot product between normal and half vector
+		float spec = pow(nDotH, matShininess); // Specular intensity calculation
+		fragColor += matSpecular * spec * lightSpecular; // Adding specular contribution to fragment color
+    }
+
+    fragOutput = vec4(fragColor, 1.0);
 }
 )";
 
@@ -199,8 +217,64 @@ const char* fragShaderSpot = R"(
    uniform vec3 lightAmbient; 
    uniform vec3 lightDiffuse; 
    uniform vec3 lightSpecular;
+
+	uniform vec3 lightSpotDirection;
+   uniform float lightCutOff;
+
+   void main(void)
+   {      
+
+
+      // Ambient term:
+      vec3 fragColor = matEmission + matAmbient * lightAmbient;
+
+      // Diffuse term:
+
+      vec3 _normal = normalize(normal);
+      vec3 lightDirection = normalize(lightPosition - fragPosition.xyz);      
+      float nDotL = dot(lightDirection, _normal);   
+      if (nDotL > 0.0f)
+      {
+         fragColor += matDiffuse * nDotL * lightDiffuse;
+      
+         // Specular term:
+         vec3 halfVector = normalize(lightDirection + normalize(-fragPosition.xyz));                     
+         float nDotHV = dot(_normal, halfVector);         
+         fragColor += matSpecular * pow(nDotHV, matShininess) * lightSpecular;
+
+			if(dot(-lightDirection, lightSpotDirection) < lightCutOff) fragColor = vec3(0.0f);
+
+      } 
+      
+      // Final color:
+      fragOutput = vec4(fragColor, 1.0f);
+   }
+)";
+
+////////////////////////////
+/*
+const char* fragShaderSpot = R"(
+   #version 440 core
+
+   in vec4 fragPosition;
+   in vec3 normal;   
+   
+   out vec4 fragOutput;
+
+   // Material properties:
+   uniform vec3 matEmission;
+   uniform vec3 matAmbient;
+   uniform vec3 matDiffuse;
+   uniform vec3 matSpecular;
+   uniform float matShininess;
+
+   // Light properties:
+   uniform vec3 lightPosition; 
+   uniform vec3 lightAmbient; 
+   uniform vec3 lightDiffuse; 
+   uniform vec3 lightSpecular;
    uniform vec3 lightDir;
-   uniform vec3 lightCutOff;
+   uniform float lightCutOff;
 
    void main(void)
    {      
@@ -211,19 +285,25 @@ const char* fragShaderSpot = R"(
       vec3 _normal = normalize(normal);
       vec3 lightDirection = normalize(lightPosition - fragPosition.xyz);      
       float nDotL = dot(lightDirection, _normal);   
-	// Spotlight effect:
-    float angle = degrees(acos(dot(-lightDirection, lightDir)));
-      if (angle < lightCutOff && nDotL > 0.0f)
-    {
-        fragColor += matDiffuse * nDotL * lightDiffuse;
-        // Specular term:
-        vec3 halfVector = normalize(lightToFragment + normalize(-fragPos.xyz));
-        float nDotHV = dot(_normal, halfVector);
-        fragColor += matSpecular * pow(nDotHV, matShininess) * lightSpecular;
-		fragOutput = vec4(fragColor, 1.0f);
+	
+		// Spotlight effect:
+		float cosAngle = dot(-lightDirection, lightDir);
+      if (cosAngle > cos(lightCutOff) && nDotL > 0.0f)
+      {
+          fragColor += matDiffuse * nDotL * lightDiffuse;
+          
+          //Specular term:
+          vec3 viewDir = normalize(-fragPosition.xyz);
+          vec3 halfVector = normalize(lightDirection + viewDir);
+          float nDotHV = dot(_normal, halfVector);
+          fragColor += matSpecular * pow(max(0.0, nDotHV), matShininess) * lightSpecular;
+      }      
 
-   }
-)";
+		// Final color:
+      fragOutput = vec4(fragColor, 1.0f);
+	}
+)";*/
+
 //////////////
 // DLL MAIN //
 //////////////
@@ -371,7 +451,7 @@ std::shared_ptr<List> LIB_API Engine::list() const {
  */
 void LIB_API Engine::list(std::shared_ptr<List> list) {
 	m_list = list;
-	m_list->setProgram(shader);
+	m_list->setProgram(progOmni);
 }
 
 ///////////////
@@ -414,7 +494,7 @@ void LIB_API closeCallback()
 	for (auto& tex : ovoreader.textures()) {
 		tex.second->deleteTexture();
 	}
-	delete shader;
+	delete progOmni;
 	delete fsOmni;
 	delete vs;
 }
@@ -659,25 +739,47 @@ bool LIB_API Engine::init(const std::string& titolo, unsigned int width, unsigne
 	vs->loadFromMemory(Shader::TYPE_VERTEX, vertShader);
 
 	// Compile fragment shader:
-	fsOmni = new Shader("fragment_shader");
+	fsOmni = new Shader("fragment_shader_omni");
 	fsOmni->loadFromMemory(Shader::TYPE_FRAGMENT, fragShaderOmni);
 
 	// Compile fragment shader:
-	fsSpot = new Shader("fragment_shader");
+	fsSpot = new Shader("fragment_shader_spot");
 	fsSpot->loadFromMemory(Shader::TYPE_FRAGMENT, fragShaderSpot);
+
+	// Compile fragment shader:
+	fsDir = new Shader("fragment_shader_dir");
+	fsDir->loadFromMemory(Shader::TYPE_FRAGMENT, fragShaderDir);
 
 	// Setup shader program:
 	// bisognerebbe fare qualche controllo
 
-	shader = new Shader("program");
-	shader->build(vs, fsOmni);
-	Shader::setCurrentProgram(shader);
-	shader->bind(0, "in_Position");
-	shader->bind(1, "in_Normal");
+	// Setup shader program omni
+	progOmni = new Shader("program_omni");
+	progOmni->build(vs, fsOmni);
+	Shader::setCurrentProgram(progOmni);
+	progOmni->bind(0, "in_Position");
+	progOmni->bind(1, "in_Normal");
+	
+	// Setup shader program dir
+	progDir = new Shader("program_dir");
+	progDir->build(vs, fsDir);
+	Shader::setCurrentProgram(progDir);
+	progDir->bind(0, "in_Position");
+	progDir->bind(1, "in_Normal");
 
+	// Setup shader program spot
+	progSpot = new Shader("program_spot");
+	progSpot->build(vs, fsSpot);
+	Shader::setCurrentProgram(progSpot);
+	progSpot->bind(0, "in_Position");
+	progSpot->bind(1, "in_Normal");
+	
 	// Get shader variable locations:
-	projLoc = shader->getParamLocation("projection");
-	mvLoc = shader->getParamLocation("modelview");
+	//projLoc = progOmni->getParamLocation("projection");
+	mvLoc = progOmni->getParamLocation("modelview");
+
+	
+
 	// Done:
 	m_initFlag = true;
 	return true;
@@ -764,7 +866,8 @@ void LIB_API Engine::begin3D(Camera* camera) {
 
 	//glMatrixMode(GL_PROJECTION);
 	camera->update(m_width, m_height);
-	shader->setMatrix(projLoc, camera->projectionMatrix());
+	currentCamera = camera;
+	//shader->setMatrix(projLoc, camera->projectionMatrix());
 	//glLoadMatrixf(glm::value_ptr(camera->projectionMatrix()));
 	c_inverse = inverse(camera->getFinalMatrix());
 
@@ -841,59 +944,60 @@ void LIB_API Engine::selectObject() {
  */
 void LIB_API Engine::end3D()
 {
+	/*
 	// Object selection
 	if (objectSelection) {
 		selectObject();
 		objectSelection = false;
 	}
 
-	// Default rendering
+
+		// Default rendering
 	m_list->render(c_inverse, (void*)objectSelection);
 	m_list->resetList();
+	*/
+
 
 	for (unsigned int l = 0; l < m_list->getNrOfLights(); l++) {
+	//for (unsigned int l = 2; l <3; l++) {
 		// Enable addictive blending from light 1 on:
 		if (l == 1)
 		{
 			glEnable(GL_BLEND);
 			glBlendFunc(GL_ONE, GL_ONE);
 		}
+
 		// Render one light at time
 		std::pair<Object*, glm::mat4> element = m_list->getElem(l);
 		Object* obj = element.first;
 		glm::mat4 mat = element.second;
 		obj->render(c_inverse * mat, nullptr); // FLAGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG????????????????????????????????????????????????????????????????????????!
-
+		Shader::getCurrentProgram()->setMatrix(Shader::getCurrentProgram()->getParamLocation("projection"), currentCamera->projectionMatrix());
 		
 		// Render meshes
-		m_list->renderMeshes(c_inverse * mat, nullptr);
+		m_list->renderMeshes(c_inverse, nullptr);
 	}
 
 	// Disable blending, in case we used it:
 	if (m_list->getNrOfLights() > 1)
 		glDisable(GL_BLEND);
 
+	m_list->resetList();
 }
 
 void LIB_API Engine::getProgramSpot()
-{
-	shader->build(vs, fsSpot);
-	shader->render(glm::mat4(), nullptr);
-	Shader::setCurrentProgram(shader);
+{	
+	Shader::setCurrentProgram(progSpot);
 }
 
 void LIB_API Engine::getProgramOmni()
 {
-	shader->build(vs, fsOmni);
-	shader->render(glm::mat4(), nullptr);
-	Shader::setCurrentProgram(shader);
+	Shader::setCurrentProgram(progOmni);
 }
 
 void LIB_API Engine::getProgramDirect()
 {
-	shader->build(vs, fsDir);
-	shader->render(glm::mat4(), nullptr);
-	Shader::setCurrentProgram(shader);
+	Shader::setCurrentProgram(progDir);
 }
 
 /**
@@ -917,11 +1021,11 @@ void LIB_API Engine::begin2D()
 	// Set orthographic projection:
 	//glMatrixMode(GL_PROJECTION);
 	ortho->update(m_width, m_height);
-	shader->setMatrix(projLoc, ortho->projectionMatrix());
+	//progOmni->setMatrix(projLoc, ortho->projectionMatrix());
 	//glLoadMatrixf(glm::value_ptr(ortho->projectionMatrix()));
 	//glMatrixMode(GL_MODELVIEW);
 	//glLoadMatrixf(glm::value_ptr(glm::mat4(1.0f)));
-	shader->setMatrix(mvLoc, glm::mat4(1.0f));
+	//progOmni->setMatrix(mvLoc, glm::mat4(1.0f));
 
 	// Disable lighting before rendering white 2D text:
 	glDisable(GL_LIGHTING);
@@ -937,7 +1041,7 @@ void LIB_API Engine::begin2D()
 void LIB_API Engine::end2D()
 {
 	// Redo ligting:
-	glEnable(GL_LIGHTING);
+	//glEnable(GL_LIGHTING);
 }
 
 /**

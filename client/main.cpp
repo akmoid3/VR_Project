@@ -382,9 +382,9 @@ int main(int argc, char* argv[])
 
 
 		engine.end3D();
-		engine.begin2D();
-		menu(engine);
-		engine.end2D();
+		//engine.begin2D();
+		//menu(engine);
+		//engine.end2D();
 		engine.swapBuffers();
 
 		if (newCarSelected && !game.isGameWon()) {

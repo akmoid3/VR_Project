@@ -8,6 +8,7 @@
 #include "engine.h"
 #define FREEGLUT_STATIC
 #include <GL/freeglut.h>
+#include <iostream>
 
  ////////////////////////////
  // BODY OF CLASS SpotLight//
@@ -104,9 +105,10 @@ void LIB_API SpotLight::render(const glm::mat4& mat, void* flag)
 {
 	Engine::getProgramSpot();
 	Light::render(mat);
-	Shader::getCurrentProgram()->setVec3(Shader::getCurrentProgram()->getParamLocation("lightPosition"), m_position);
-	Shader::getCurrentProgram()->setFloat(Shader::getCurrentProgram()->getParamLocation("cutOff"), m_cutoff);
-	Shader::getCurrentProgram()->setVec3(Shader::getCurrentProgram()->getParamLocation("lightDir"), m_direction);
+	Shader::getCurrentProgram()->setVec3(Shader::getCurrentProgram()->getParamLocation("lightPosition"), glm::vec3(mat[3]));
+	Shader::getCurrentProgram()->setFloat(Shader::getCurrentProgram()->getParamLocation("lightCutOff"), glm::cos(glm::radians(m_cutoff)));
+	Shader::getCurrentProgram()->setVec3(Shader::getCurrentProgram()->getParamLocation("lightSpotDirection"), glm::normalize(glm::mat3(mat) * m_direction));
+	std::cout << glm::to_string(glm::mat3(mat) * m_direction) << std::endl;
 	//glLightfv(m_lightNumber, GL_SPOT_DIRECTION, glm::value_ptr(m_direction));
 	//glLightfv(m_lightNumber, GL_POSITION, glm::value_ptr(m_position));
 	//glLightf(m_lightNumber, GL_CONSTANT_ATTENUATION, m_attenuationConstant); 
