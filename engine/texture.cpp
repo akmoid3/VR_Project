@@ -6,12 +6,16 @@
  * @author	Gruppo05 (C) SUPSI [mariagrazia.corino@student.supsi.ch, kristian.boldini@student.supsi.ch, ahmed.elaidy@student.supsi.ch]
  */
 
+#define GLEW_STATIC
+#include <GL/glew.h>
 #include "engine.h"
 #include <iostream>
 #define FREEGLUT_STATIC
 #include <GL/freeglut.h>
 #define FREEIMAGE_LIB 
 #include <FreeImage.h>
+ // Glew (include it before GL.h):
+
 
  // Quick define for the extension:
 #define GL_TEXTURE_MAX_ANISOTROPY_EXT        0x84FE
@@ -44,13 +48,15 @@ void LIB_API Texture::load()
 	// Align to 1 byte:
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
+	
 	// Change texture settings:
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-
+	
 	int anisotropicLevel = 1;
+	
 	/*if (strstr((const char*)glGetString(GL_EXTENSIONS), "GL_EXT_texture_filter_anisotropic"))
 	{
 		std::cout << "   Anisotropic filtering supported" << std::endl;
@@ -67,25 +73,20 @@ void LIB_API Texture::load()
 		texturePath.c_str());
 
 	// Check if image is RGB or RGBA
-	GLenum format = GL_BGRA_EXT;
-	GLint component = 4;
-	if (bitmap) {
-		// Check the number of channels
-		int numChannels = FreeImage_GetBPP(bitmap) / 8;  // BPP (bits per pixel) divided by 8 gives the number of bytes per pixel
-
-		if (numChannels == 3) {
-			// RGB format
-			format = GL_BGR_EXT;
-			component = 3;
-		}
+	int intFormat = GL_RGB;
+	GLenum extFormat = GL_BGR;
+	if (FreeImage_GetBPP(bitmap) == 32)
+	{
+		intFormat = GL_RGBA;
+		extFormat = GL_BGRA;
 	}
 
 	// FreeImage supports them but they will appear upside-down:  use the FreeImage_FlipVertical() method to fix that.
 	FreeImage_FlipVertical(bitmap);
 	// Load image into OpenGL: 
 	// glTexImage2D(GL_TEXTURE_2D, 0, component, FreeImage_GetWidth(bitmap), FreeImage_GetHeight(bitmap),0, format, GL_UNSIGNED_BYTE, (void*) FreeImage_GetBits(bitmap));
-	gluBuild2DMipmaps(GL_TEXTURE_2D, component, FreeImage_GetWidth(bitmap), FreeImage_GetHeight(bitmap), format, GL_UNSIGNED_BYTE, (void*)FreeImage_GetBits(bitmap));
-
+	//gluBuild2DMipmaps(GL_TEXTURE_2D, component, FreeImage_GetWidth(bitmap), FreeImage_GetHeight(bitmap), format, GL_UNSIGNED_BYTE, (void*)FreeImage_GetBits(bitmap));
+	glGenerateMipmap(GL_TEXTURE_2D);
 	// Textures exported via the over3ds plugin are saved as DDS files
 	
 
@@ -123,7 +124,6 @@ unsigned int LIB_API Texture::texId()
 void LIB_API Texture::render(const glm::mat4&, void*)
 {
 	glBindTexture(GL_TEXTURE_2D, m_texId);
-	glEnable(GL_TEXTURE_2D);
 }
 
 

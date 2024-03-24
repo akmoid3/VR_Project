@@ -42,7 +42,7 @@
 ////////////
 
 static glm::mat4 c_inverse; ///< Inverse of the camera final matrix.
-
+Texture* Engine::whitePixel = nullptr;
 /////////////
 // GLOBALS //
 /////////////
@@ -87,17 +87,21 @@ const char* vertShader = R"(
    uniform mat4 projection;
    uniform mat4 modelview;
    uniform mat3 normalMatrix;
+   
 
    // Attributes:
    layout(location = 0) in vec3 in_Position;
    layout(location = 1) in vec3 in_Normal;
+   layout(location = 2) in vec2 in_TexCoord;
 
    // Varying:
    out vec4 fragPosition;
    out vec3 normal;   
+   out vec2 texCoord;
 
    void main(void)
    {
+	  texCoord = in_TexCoord;
       fragPosition = modelview * vec4(in_Position, 1.0f);
       gl_Position = projection * fragPosition;      
       normal = normalMatrix * in_Normal;
@@ -110,7 +114,8 @@ const char* fragShaderOmni = R"(
 
    in vec4 fragPosition;
    in vec3 normal;   
-   
+   in vec2 texCoord; 
+
    out vec4 fragOutput;
 
    // Material properties:
@@ -126,8 +131,14 @@ const char* fragShaderOmni = R"(
    uniform vec3 lightDiffuse; 
    uniform vec3 lightSpecular;
 
+   // Texture mapping:
+   layout(binding = 0) uniform sampler2D texSampler;
+
    void main(void)
    {      
+	  // Texture element:
+      vec4 texel = texture(texSampler, texCoord);
+
       // Ambient term:
       vec3 fragColor = matEmission + matAmbient * lightAmbient;
 
@@ -144,9 +155,8 @@ const char* fragShaderOmni = R"(
          float nDotHV = dot(_normal, halfVector);         
          fragColor += matSpecular * pow(nDotHV, matShininess) * lightSpecular;
       } 
-      
       // Final color:
-      fragOutput = vec4(fragColor, 1.0f);
+      fragOutput = texel * vec4(fragColor, 1.0f);
    }
 )";
 
@@ -157,6 +167,8 @@ const char* fragShaderDir = R"(
 // Varying variables from the vertex shader:
 in vec4 fragPosition;
 in vec3 normal;
+in vec2 texCoord; 
+
 out vec4 fragOutput;
 
 // Material properties:
@@ -172,8 +184,14 @@ uniform vec3 lightAmbient;
 uniform vec3 lightDiffuse;
 uniform vec3 lightSpecular;
 
+// Texture mapping:
+layout(binding = 0) uniform sampler2D texSampler;
+
 void main(void)
 {
+	// Texture element:
+      vec4 texel = texture(texSampler, texCoord);
+
     // Emission and ambient:
     vec3 fragColor = matEmission + matAmbient * lightAmbient;
 
@@ -191,7 +209,7 @@ void main(void)
          fragColor += matSpecular * pow(nDotHV, matShininess) * lightSpecular;
     }
 
-    fragOutput = vec4(fragColor, 1.0);
+    fragOutput = texel * vec4(fragColor, 1.0);
 }
 )";
 
@@ -201,7 +219,8 @@ const char* fragShaderSpot = R"(
 
    in vec4 fragPosition;
    in vec3 normal;   
-   
+   in vec2 texCoord; 
+
    out vec4 fragOutput;
 
    // Material properties:
@@ -216,13 +235,17 @@ const char* fragShaderSpot = R"(
    uniform vec3 lightAmbient; 
    uniform vec3 lightDiffuse; 
    uniform vec3 lightSpecular;
-
-	uniform vec3 lightSpotDirection;
+   uniform vec3 lightSpotDirection;
    uniform float lightCutOff;
+
+   // Texture mapping:
+   layout(binding = 0) uniform sampler2D texSampler;
 
    void main(void)
    {      
 
+	  // Texture element:
+      vec4 texel = texture(texSampler, texCoord);
 
       // Ambient term:
       vec3 fragColor = matEmission + matAmbient * lightAmbient;
@@ -246,7 +269,7 @@ const char* fragShaderSpot = R"(
       } 
       
       // Final color:
-      fragOutput = vec4(fragColor, 1.0f);
+      fragOutput = texel * vec4(fragColor, 1.0f);
    }
 )";
 
@@ -661,7 +684,7 @@ bool LIB_API Engine::init(const std::string& titolo, unsigned int width, unsigne
 		}
 	// Register OpenGL debug callback:
 
-	ENABLE_DEBUG; // CHIEDERE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	ENABLE_DEBUG;
 
 	// Log context properties:
 	std::cout << "OpenGL properties:" << std::endl;
@@ -724,6 +747,7 @@ bool LIB_API Engine::init(const std::string& titolo, unsigned int width, unsigne
 	// Init FreeImage:
 	FreeImage_Initialise(); // Static lib only
 
+
 	// Call this after creating your OpenGL context
 
 	// Check OpenGL version:
@@ -733,6 +757,10 @@ bool LIB_API Engine::init(const std::string& titolo, unsigned int width, unsigne
 	std::cout << "   renderer . . : " << glGetString(GL_RENDERER) << std::endl;
 
 
+	// White pixel texture
+	whitePixel = new Texture("pave.dds");
+	whitePixel->load();
+	
 	// Compile vertex shader:
 	vs = new Shader("vertex_shader");
 	vs->loadFromMemory(Shader::TYPE_VERTEX, vertShader);
@@ -758,6 +786,7 @@ bool LIB_API Engine::init(const std::string& titolo, unsigned int width, unsigne
 	Shader::setCurrentProgram(progOmni);
 	progOmni->bind(0, "in_Position");
 	progOmni->bind(1, "in_Normal");
+	progOmni->bind(2, "in_TexCoord");
 	
 	// Setup shader program dir
 	progDir = new Shader("program_dir");
@@ -765,6 +794,7 @@ bool LIB_API Engine::init(const std::string& titolo, unsigned int width, unsigne
 	Shader::setCurrentProgram(progDir);
 	progDir->bind(0, "in_Position");
 	progDir->bind(1, "in_Normal");
+	progDir->bind(2, "in_TexCoord");
 
 	// Setup shader program spot
 	progSpot = new Shader("program_spot");
@@ -772,6 +802,7 @@ bool LIB_API Engine::init(const std::string& titolo, unsigned int width, unsigne
 	Shader::setCurrentProgram(progSpot);
 	progSpot->bind(0, "in_Position");
 	progSpot->bind(1, "in_Normal");
+	progSpot->bind(2, "in_TexCoord");
 	
 	// Get shader variable locations:
 	//projLoc = progOmni->getParamLocation("projection");
@@ -931,8 +962,8 @@ void LIB_API Engine::selectObject() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// Enable lighting and texture mapping for default rendering
-	glEnable(GL_LIGHTING);
-	glEnable(GL_TEXTURE_2D);
+	//glEnable(GL_LIGHTING);
+	//glEnable(GL_TEXTURE_2D);
 
 }
 
@@ -999,6 +1030,11 @@ void LIB_API Engine::getProgramDirect()
 	Shader::setCurrentProgram(progDir);
 }
 
+Texture LIB_API * Engine::getWhitePixel()
+{
+	return whitePixel;
+}
+
 /**
  * @brief Loads a scene from an OVO file.
  *
@@ -1027,8 +1063,8 @@ void LIB_API Engine::begin2D()
 	//progOmni->setMatrix(mvLoc, glm::mat4(1.0f));
 
 	// Disable lighting before rendering white 2D text:
-	glDisable(GL_LIGHTING);
-	glDisable(GL_TEXTURE_2D);
+	//glDisable(GL_LIGHTING);
+	//glDisable(GL_TEXTURE_2D);
 	//glColor3f(1.0f, 1.0f, 1.0f);
 }
 

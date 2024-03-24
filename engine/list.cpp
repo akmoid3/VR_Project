@@ -28,11 +28,6 @@ unsigned int List::max_lights = 8;
  */
 void LIB_API List::resetList() {
 
-	// Spegne tutte le luci
-	for (unsigned int i = 0; i < nrOfLights; i++)
-	{
-		glDisable(GL_LIGHT0 + i);
-	}
 	m_list.clear();
 	nrOfLights = 0;
 }

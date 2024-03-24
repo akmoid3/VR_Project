@@ -59,6 +59,7 @@
 #include "texture.h"
 #include "keysDefinitions.h"
 #include "shader.h"
+#include "fbo.h"
 
 #include <iostream>
 #include <memory>
@@ -103,6 +104,7 @@ public:	  //
 	static void getProgramSpot();
 	static void getProgramOmni();
 	static void getProgramDirect();
+	static Texture* getWhitePixel();
 
 	Node* load(std::string);
 	void begin2D();
@@ -146,6 +148,7 @@ private:	   //
 
 	// Internal vars:
 	static Engine& m_instance; ///< Singleton instance of the Engine.
+	static Texture* whitePixel;
 
 	bool m_initFlag{ false }; ///< Flag indicating whether the Engine has been initialized.
 	bool m_isRunningFlag{ false }; ///< Flag indicating whether the Engine is running.

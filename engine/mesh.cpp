@@ -91,7 +91,7 @@ void LIB_API Mesh::loadLod() {
 	//glVertexPointer(3, GL_FLOAT, 0, nullptr); // Tells OpenGL to use last bound vbo
 	glVertexAttribPointer((GLuint)0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 	glEnableVertexAttribArray(0);
-/*
+
 	// TEXTURE COORDINATES VBO
 	glGenBuffers(1, &vbo_textcoord);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_textcoord);
@@ -101,10 +101,11 @@ void LIB_API Mesh::loadLod() {
 	
 	// Tell OpenGL that you want to use vertex arrays for the given attribute:
 	//glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	*/
+	
 	//glTexCoordPointer(2, GL_FLOAT, 0, nullptr);
-	//glVertexAttribPointer((GLuint)0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-	//glEnableVertexAttribArray(0);
+	glVertexAttribPointer((GLuint)2, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+	glEnableVertexAttribArray(2);
+
 
 	// NORMAL VECTOR VBO
 	glGenBuffers(1, &vbo_normal);

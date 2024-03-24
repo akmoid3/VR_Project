@@ -142,6 +142,7 @@
     <ClInclude Include="camera.h" />
     <ClInclude Include="directionalLight.h" />
     <ClInclude Include="engine.h" />
+    <ClInclude Include="fbo.h" />
     <ClInclude Include="keysDefinitions.h" />
     <ClInclude Include="light.h" />
     <ClInclude Include="list.h" />
@@ -163,6 +164,7 @@
     <ClCompile Include="directionalLight.cpp" />
     <ClCompile Include="engine.cpp" />
     <ClCompile Include="engine_test.cpp" />
+    <ClCompile Include="fbo.cpp" />
     <ClCompile Include="light.cpp" />
     <ClCompile Include="list.cpp" />
     <ClCompile Include="lod.cpp" />

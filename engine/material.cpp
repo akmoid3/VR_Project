@@ -29,7 +29,7 @@
   * @param name The name of the material.
   */
 LIB_API Material::Material(const std::string& name) : Object(name), m_ambient{ glm::vec3{ 0.5f }, 1.0f },
-m_diffuse{ glm::vec3{ 0.5f }, 1.0f }, m_emission{ glm::vec3{ 0.5f }, 1.0f }, m_specular{ glm::vec3{ 0.5f }, 1.0f }, m_shininess{ 50.0f }, m_texture{ nullptr }
+m_diffuse{ glm::vec3{ 0.5f }, 1.0f }, m_emission{ glm::vec3{ 0.5f }, 1.0f }, m_specular{ glm::vec3{ 0.5f }, 1.0f }, m_shininess{ 50.0f }, m_texture{ Engine::getWhitePixel()}
 {
 
 }
@@ -132,12 +132,9 @@ void LIB_API Material::render(const glm::mat4& m, void* arg)
 	Shader::getCurrentProgram()->setVec3(Shader::getCurrentProgram()->getParamLocation("matSpecular"), m_specular);
 	Shader::getCurrentProgram()->setFloat(Shader::getCurrentProgram()->getParamLocation("matShininess"), m_shininess);
 
-	if (m_texture != nullptr) {
-		m_texture->render(m, arg);
-	}
-	else {
-		glDisable(GL_TEXTURE_2D);
-	}
+	
+	m_texture->render(m, arg);
+	
 }
 
 /**
