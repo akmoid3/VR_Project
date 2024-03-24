@@ -84,8 +84,7 @@ void LIB_API Texture::load()
 	// FreeImage supports them but they will appear upside-down:  use the FreeImage_FlipVertical() method to fix that.
 	FreeImage_FlipVertical(bitmap);
 	// Load image into OpenGL: 
-	// glTexImage2D(GL_TEXTURE_2D, 0, component, FreeImage_GetWidth(bitmap), FreeImage_GetHeight(bitmap),0, format, GL_UNSIGNED_BYTE, (void*) FreeImage_GetBits(bitmap));
-	//gluBuild2DMipmaps(GL_TEXTURE_2D, component, FreeImage_GetWidth(bitmap), FreeImage_GetHeight(bitmap), format, GL_UNSIGNED_BYTE, (void*)FreeImage_GetBits(bitmap));
+	glTexImage2D(GL_TEXTURE_2D, 0, intFormat, FreeImage_GetWidth(bitmap), FreeImage_GetHeight(bitmap),0, extFormat, GL_UNSIGNED_BYTE, (void*) FreeImage_GetBits(bitmap));
 	glGenerateMipmap(GL_TEXTURE_2D);
 	// Textures exported via the over3ds plugin are saved as DDS files
 	

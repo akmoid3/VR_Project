@@ -156,8 +156,7 @@ const char* fragShaderOmni = R"(
          fragColor += matSpecular * pow(nDotHV, matShininess) * lightSpecular;
       } 
       // Final color:
-      //fragOutput = texel * vec4(fragColor, 1.0f);
-		fragOutput = vec4(fragColor, 1.0f);
+      fragOutput = texel * vec4(fragColor, 1.0f);
    }
 )";
 
@@ -210,8 +209,7 @@ void main(void)
          fragColor += matSpecular * pow(nDotHV, matShininess) * lightSpecular;
     }
 
-    //fragOutput = texel * vec4(fragColor, 1.0f);
-		fragOutput = vec4(fragColor, 1.0f);
+    fragOutput = texel * vec4(fragColor, 1.0f);
 }
 )";
 
@@ -276,8 +274,7 @@ const char* fragShaderSpot = R"(
       } 
       
       // Final color:
-      //fragOutput = texel * vec4(fragColor, 1.0f);
-		fragOutput = vec4(fragColor, 1.0f);
+      fragOutput = texel * vec4(fragColor, 1.0f);
    }
 )";
 
@@ -766,7 +763,7 @@ bool LIB_API Engine::init(const std::string& titolo, unsigned int width, unsigne
 
 
 	// White pixel texture
-	whitePixel = new Texture("pave.dds");
+	whitePixel = new Texture("whitePixel.png");
 	whitePixel->load();
 	
 	// Compile vertex shader:
