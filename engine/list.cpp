@@ -63,6 +63,27 @@ void LIB_API List::renderMeshes(const glm::mat4& c_inverse, void* flag)
 		glm::mat4 mat = pair.second;
 		obj->render(c_inverse * mat, flag);
 	}
+
+
+	// Second pass: Render the shadows
+	for (auto& pair : m_list) {
+		Object* obj = pair.first;
+		glm::mat4 mat = pair.second;
+
+		Mesh* m = dynamic_cast<Mesh*>(obj);
+		if (m != 0 && m->isCastingShadow()) {
+
+			// Apply the scaling matrix to create the shadow effect
+			glm::mat4 shadowMat = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 0.01f, 1.0f));
+			mat = shadowMat * mat;
+
+			// Render the object with the scaling matrix applied and the shadow material
+			m->shadowMaterial(m_shadowMaterial);
+			m->render(c_inverse * mat, (void*)false);
+			m->shadowMaterial(nullptr);
+		}
+
+	}
 }
 
 /**

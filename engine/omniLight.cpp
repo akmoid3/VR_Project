@@ -93,7 +93,7 @@ void LIB_API OmniLight::render(const glm::mat4& mat, void* flag)
 {
 	Engine::getProgramOmni();
 	Light::render(mat);
-	Shader::getCurrentProgram()->setVec3(Shader::getCurrentProgram()->getParamLocation("lightPosition"), m_position);
+	Shader::getCurrentProgram()->setVec3(Shader::getCurrentProgram()->getParamLocation("lightPosition"), glm::vec3(mat[3]));
 
 	//glLightfv(m_lightNumber, GL_POSITION, glm::value_ptr(m_position));
 	//glLightf(m_lightNumber, GL_CONSTANT_ATTENUATION, m_attenuationConstant); // default 1

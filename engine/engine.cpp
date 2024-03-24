@@ -167,7 +167,7 @@ uniform vec3 matSpecular;
 uniform float matShininess;
 
 // Light properties:
-uniform vec3 lightDirection; // Direction of the infinite light source
+uniform vec3 lightPosition; 
 uniform vec3 lightAmbient;
 uniform vec3 lightDiffuse;
 uniform vec3 lightSpecular;
@@ -179,17 +179,16 @@ void main(void)
 
     // Diffuse term:
     vec3 _normal = normalize(normal);
-    float nDotL = dot(_normal, -lightDirection);
+	 vec3 lightDirection = normalize(lightPosition); 
+    float nDotL = dot(_normal, lightDirection);
+
     if (nDotL > 0.0) {
         fragColor += matDiffuse * nDotL * lightDiffuse;
 
        // Specular term:
-		vec3 viewDir = normalize(-fragPosition.xyz);
-		vec3 lightDir = -lightDirection; // Direction from the fragment to the light
-		vec3 halfVector = normalize(viewDir + lightDir); // Half vector between view and light directions
-		float nDotH = dot(_normal, halfVector); // Dot product between normal and half vector
-		float spec = pow(nDotH, matShininess); // Specular intensity calculation
-		fragColor += matSpecular * spec * lightSpecular; // Adding specular contribution to fragment color
+			vec3 halfVector = normalize(lightDirection + normalize(-fragPosition.xyz));                     
+         float nDotHV = dot(_normal, halfVector);         
+         fragColor += matSpecular * pow(nDotHV, matShininess) * lightSpecular;
     }
 
     fragOutput = vec4(fragColor, 1.0);
@@ -959,7 +958,7 @@ void LIB_API Engine::end3D()
 
 
 	for (unsigned int l = 0; l < m_list->getNrOfLights(); l++) {
-	//for (unsigned int l = 2; l <3; l++) {
+	//for (unsigned int l = 1; l <2; l++) {
 		// Enable addictive blending from light 1 on:
 		if (l == 1)
 		{
