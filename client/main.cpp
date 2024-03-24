@@ -47,6 +47,8 @@ Mesh* car = nullptr;
 bool newCarSelected = false;
 bool isGameStarted = false;
 int level = 1;
+std::string texDirectory = "../ovo/"; // Directory where texture will be stored and loaded from
+
 // Singleton instance
 Engine& engine = Engine::instance();
 RushHourGame game;
@@ -335,6 +337,8 @@ int main(int argc, char* argv[])
 	engine.setMouseCallback(mouseClicks);
 	engine.setSpecialCallback(specialCallback);
 	engine.setBackgroundColor(0.5f, 0.7f, 1.0f);
+	engine.setTextureDirectory(texDirectory);
+
 
 	// Define initial transformations
 	glm::mat4 translation = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -40.0f));

@@ -763,7 +763,7 @@ bool LIB_API Engine::init(const std::string& titolo, unsigned int width, unsigne
 
 
 	// White pixel texture to be used in textureless Meshes
-	whitePixel = new Texture("whitePixel.png");
+	whitePixel = new Texture("ovo/whitePixel.png"); 
 	whitePixel->load();
 	
 	// Compile vertex shader:
@@ -828,6 +828,19 @@ bool LIB_API Engine::init(const std::string& titolo, unsigned int width, unsigne
  */
 void LIB_API Engine::setBackgroundColor(float r, float g, float b) {
 	glClearColor(r, g, b, 1.0f); // RGBA components
+}
+
+/**
+ * @brief Set the directory path where textures will be loaded from.
+ *
+ * This function sets the directory path where textures will be loaded from.
+ * By default, the texture directory is set to the root directory of the project.
+ *
+ * @param path The directory path to set as the texture directory.
+ */
+void LIB_API Engine::setTextureDirectory(const std::string& path)
+{
+	Texture::textureDirectory = path;
 }
 
 /**

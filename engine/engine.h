@@ -96,6 +96,7 @@ public:	  //
 	void setKeyboardCallback(void (*callback)(unsigned char, int, int));
 	void setSpecialCallback(void (*callback)(int, int, int));
 	void setMouseCallback(void (*callback)(int, int, int, int));
+	void setTextureDirectory(const std::string& path);
 	void update();
 	void swapBuffers();
 	bool free();

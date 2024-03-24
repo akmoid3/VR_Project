@@ -21,9 +21,13 @@
 #define GL_TEXTURE_MAX_ANISOTROPY_EXT        0x84FE
 #define GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT    0x84FF
 
+
+
  ///////////////////////////
  // BODY OF CLASS Material//
  ///////////////////////////
+
+std::string Texture::textureDirectory = "../";
 
 /**
 * @brief Constructor for the Texture class.
@@ -66,11 +70,15 @@ void LIB_API Texture::load()
 	}*/
 
 	// Load an image from file:
-	std::string path = "../ovo/";
-	std::string texturePath = path + name();
+	std::string texturePath = textureDirectory + name();
 	std::cout << texturePath << std::endl;
 	FIBITMAP* bitmap = FreeImage_Load(FreeImage_GetFileType(texturePath.c_str(), 0),
 		texturePath.c_str());
+	if (bitmap == nullptr) {
+		// Image loading failed
+		std::cerr << "Failed to load image: " << texturePath << std::endl;
+		return;
+	}
 
 	// Check if image is RGB or RGBA
 	int intFormat = GL_RGB;

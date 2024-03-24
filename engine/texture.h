@@ -43,6 +43,9 @@ public: //
 	// Ereditato tramite Object
 	void render(const glm::mat4&, void*) override;
 
+	// Public static variable
+	static std::string textureDirectory; ///< Directory path for texture files. Default is the directory of the executable. 
+
 
 ////////////
 protected://
