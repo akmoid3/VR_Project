@@ -132,8 +132,8 @@ void LIB_API Material::render(const glm::mat4& m, void* arg)
 	Shader::getCurrentProgram()->setVec3(Shader::getCurrentProgram()->getParamLocation("matSpecular"), m_specular);
 	Shader::getCurrentProgram()->setFloat(Shader::getCurrentProgram()->getParamLocation("matShininess"), m_shininess);
 
-	
-	m_texture->render(m, arg);
+	if(m_texture)
+		m_texture->render(m, arg);
 	
 }
 

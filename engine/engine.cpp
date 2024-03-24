@@ -734,8 +734,8 @@ bool LIB_API Engine::init(const std::string& titolo, unsigned int width, unsigne
 	// Enable zeta buffer
 	glEnable(GL_DEPTH_TEST);
 
-	// In case there is some scaling
-	glEnable(GL_NORMALIZE);
+	// In case there is some scaling. Deprecated, done in shader!
+	//glEnable(GL_NORMALIZE);
 
 	// Activate local view position
 	glLightModelf(GL_LIGHT_MODEL_LOCAL_VIEWER, 1.0f);
@@ -743,8 +743,8 @@ bool LIB_API Engine::init(const std::string& titolo, unsigned int width, unsigne
 	// Activate face culling
 	glEnable(GL_CULL_FACE);
 
-	// Enable lighting
-	glEnable(GL_LIGHTING);
+	// Enable lighting. Deprecated
+	//glEnable(GL_LIGHTING);
 
 	// Enable for the multipass rendering
 	glDepthFunc(GL_LEQUAL);
@@ -762,7 +762,7 @@ bool LIB_API Engine::init(const std::string& titolo, unsigned int width, unsigne
 	std::cout << "   renderer . . : " << glGetString(GL_RENDERER) << std::endl;
 
 
-	// White pixel texture
+	// White pixel texture to be used in textureless Meshes
 	whitePixel = new Texture("whitePixel.png");
 	whitePixel->load();
 	
@@ -811,7 +811,7 @@ bool LIB_API Engine::init(const std::string& titolo, unsigned int width, unsigne
 	
 	// Get shader variable locations:
 	//projLoc = progOmni->getParamLocation("projection");
-	mvLoc = progOmni->getParamLocation("modelview");
+	//mvLoc = progOmni->getParamLocation("modelview");
 
 	
 
