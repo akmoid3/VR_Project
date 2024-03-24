@@ -156,7 +156,8 @@ const char* fragShaderOmni = R"(
          fragColor += matSpecular * pow(nDotHV, matShininess) * lightSpecular;
       } 
       // Final color:
-      fragOutput = texel * vec4(fragColor, 1.0f);
+      //fragOutput = texel * vec4(fragColor, 1.0f);
+		fragOutput = vec4(fragColor, 1.0f);
    }
 )";
 
@@ -209,7 +210,8 @@ void main(void)
          fragColor += matSpecular * pow(nDotHV, matShininess) * lightSpecular;
     }
 
-    fragOutput = texel * vec4(fragColor, 1.0);
+    //fragOutput = texel * vec4(fragColor, 1.0f);
+		fragOutput = vec4(fragColor, 1.0f);
 }
 )";
 
@@ -263,13 +265,19 @@ const char* fragShaderSpot = R"(
          vec3 halfVector = normalize(lightDirection + normalize(-fragPosition.xyz));                     
          float nDotHV = dot(_normal, halfVector);         
          fragColor += matSpecular * pow(nDotHV, matShininess) * lightSpecular;
-
-			if(dot(-lightDirection, lightSpotDirection) < lightCutOff) fragColor = vec3(0.0f);
+			float dot = dot(-lightDirection, lightSpotDirection);
+			if (dot < lightCutOff) {
+				int factor = 10;
+				fragColor *= pow(factor * dot + 1 - lightCutOff * factor, 3.0);
+				//float interpolationFactor = pow((dot - lightCutOff) / (1.0 - lightCutOff), 3.0);
+				//fragColor *= 0;
+		}
 
       } 
       
       // Final color:
-      fragOutput = texel * vec4(fragColor, 1.0f);
+      //fragOutput = texel * vec4(fragColor, 1.0f);
+		fragOutput = vec4(fragColor, 1.0f);
    }
 )";
 
@@ -989,7 +997,7 @@ void LIB_API Engine::end3D()
 
 
 	for (unsigned int l = 0; l < m_list->getNrOfLights(); l++) {
-	//for (unsigned int l = 1; l <2; l++) {
+	//for (unsigned int l = 2; l <3; l++) {
 		// Enable addictive blending from light 1 on:
 		if (l == 1)
 		{
