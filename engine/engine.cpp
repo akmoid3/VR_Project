@@ -265,9 +265,8 @@ const char* fragShaderSpot = R"(
          fragColor += matSpecular * pow(nDotHV, matShininess) * lightSpecular;
 			float dot = dot(-lightDirection, lightSpotDirection);
 			if (dot < lightCutOff) {
-				int factor = 10;
-				fragColor *= pow(factor * dot + 1 - lightCutOff * factor, 3.0);
-				//float interpolationFactor = pow((dot - lightCutOff) / (1.0 - lightCutOff), 3.0);
+				int intensityFactor = 10;
+				fragColor *= clamp(pow(intensityFactor * dot + 1 - intensityFactor * lightCutOff, 3.0), 0.0, 1.0);
 				//fragColor *= 0;
 		}
 
